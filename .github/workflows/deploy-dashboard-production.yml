@@ -1,0 +1,56 @@
+name: Deploy production — Dashboard (Vercel)
+
+on:
+  workflow_run:
+    workflows: ['Build & quality checks — Dashboard']
+    types:
+      - completed
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dashboard-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  deploy:
+    name: Vercel Production (Dashboard)
+    runs-on: ubuntu-latest
+    environment: PROD
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
+    env:
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID_DASHBOARD }}
+      VERCEL_TOKEN: ${{ vars.VERCEL_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build dashboard
+        run: npm run build -w @tribus-monitor/dashboard
+
+      - name: Deploy dashboard
+        run: npx --yes vercel@41 deploy --prod --yes --token "$VERCEL_TOKEN"

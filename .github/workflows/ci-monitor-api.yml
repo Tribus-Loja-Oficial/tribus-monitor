@@ -1,28 +1,56 @@
-name: CI Monitor API
+name: Build & quality checks — Monitor API
 
 on:
   push:
-    branches: [main]
+    branches: [main, development]
     paths:
       - 'apps/monitor-api/**'
       - 'packages/core/**'
       - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ci-monitor-api.yml'
   pull_request:
+    branches: [main, development]
     paths:
       - 'apps/monitor-api/**'
       - 'packages/core/**'
       - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ci-monitor-api.yml'
+
+concurrency:
+  group: ci-monitor-api-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  monitor-api:
+  quality:
+    name: Lint, Typecheck, Test & Build (Monitor API)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm ci
-      - run: npm run typecheck -w @tribus-monitor/monitor-api
-      - run: npm run lint -w @tribus-monitor/monitor-api
-      - run: npm run test -w @tribus-monitor/monitor-api
-      - run: npm run build -w @tribus-monitor/monitor-api
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck -w @tribus-monitor/monitor-api
+
+      - name: Lint
+        run: npm run lint -w @tribus-monitor/monitor-api
+
+      - name: Tests
+        run: npm run test -w @tribus-monitor/monitor-api
+
+      - name: Build
+        run: npm run build -w @tribus-monitor/monitor-api

@@ -1,21 +1,64 @@
-name: Runner Cron
+name: Deploy/Run production — Check Runner
 
 on:
+  workflow_run:
+    workflows: ['Build & quality checks — Check Runner']
+    types:
+      - completed
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
+concurrency:
+  group: deploy-run-check-runner-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   run-checks:
+    name: Execute Check Runner (Production)
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm ci
-      - run: npm run build -w @tribus-monitor/core
-      - run: npm run build -w @tribus-monitor/check-runner
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck -w @tribus-monitor/check-runner
+
+      - name: Lint
+        run: npm run lint -w @tribus-monitor/check-runner
+
+      - name: Build core
+        run: npm run build -w @tribus-monitor/core
+
+      - name: Build check-runner
+        run: npm run build -w @tribus-monitor/check-runner
+
       - name: Execute check-runner
         run: node apps/check-runner/dist/index.js
         env:

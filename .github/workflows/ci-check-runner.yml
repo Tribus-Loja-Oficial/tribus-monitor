@@ -1,25 +1,25 @@
-name: Build & quality checks — Dashboard
+name: Build & quality checks — Check Runner
 
 on:
   push:
     branches: [main, development]
     paths:
-      - 'apps/dashboard/**'
+      - 'apps/check-runner/**'
       - 'packages/core/**'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/ci-dashboard.yml'
+      - '.github/workflows/ci-check-runner.yml'
   pull_request:
     branches: [main, development]
     paths:
-      - 'apps/dashboard/**'
+      - 'apps/check-runner/**'
       - 'packages/core/**'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/ci-dashboard.yml'
+      - '.github/workflows/ci-check-runner.yml'
 
 concurrency:
-  group: ci-dashboard-${{ github.ref }}
+  group: ci-check-runner-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   quality:
-    name: Lint, Typecheck, Test & Build (Dashboard)
+    name: Lint, Typecheck, Test & Build (Check Runner)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,13 +44,13 @@ jobs:
         run: npm ci
 
       - name: Typecheck
-        run: npm run typecheck -w @tribus-monitor/dashboard
+        run: npm run typecheck -w @tribus-monitor/check-runner
 
       - name: Lint
-        run: npm run lint -w @tribus-monitor/dashboard
+        run: npm run lint -w @tribus-monitor/check-runner
 
       - name: Tests
-        run: npm run test -w @tribus-monitor/dashboard
+        run: npm run test -w @tribus-monitor/check-runner
 
       - name: Build
-        run: npm run build -w @tribus-monitor/dashboard
+        run: npm run build -w @tribus-monitor/check-runner

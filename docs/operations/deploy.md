@@ -1,16 +1,27 @@
 # Operações — Deploy
 
+## Estratégia de CI/CD (alinhada ao padrão Tribus)
+
+- CI separado por camada:
+  - `Build & quality checks — Dashboard`
+  - `Build & quality checks — Monitor API`
+  - `Build & quality checks — Check Runner`
+- Deploy separado por camada, acionado após CI verde na `main`:
+  - `Deploy production — Dashboard (Vercel)`
+  - `Deploy production — Monitor API (Cloudflare Workers)`
+  - `Deploy/Run production — Check Runner`
+
 ## Dashboard (Vercel)
 
 - Build: `npm run build -w @tribus-monitor/dashboard`
-- Deploy em projeto Vercel dedicado.
+- Deploy: workflow `deploy-dashboard-production.yml`.
 
 ## Monitor API (Cloudflare Workers)
 
 - Build: `npm run build -w @tribus-monitor/monitor-api`
-- Deploy: `wrangler deploy` em `apps/monitor-api`.
+- Deploy: workflow `deploy-monitor-api-production.yml` (Wrangler).
 
 ## Check Runner (GitHub Actions)
 
-- Deploy é o próprio workflow `runner-cron.yml`.
-- Executa em cron e também manual (`workflow_dispatch`).
+- Execução contínua: workflow `runner-cron.yml`.
+- Executa em cron, manual (`workflow_dispatch`) e após CI do runner na `main`.
