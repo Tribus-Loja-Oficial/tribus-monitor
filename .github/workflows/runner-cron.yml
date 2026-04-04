@@ -1,0 +1,27 @@
+name: Runner Cron
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run build -w @tribus-monitor/core
+      - run: npm run build -w @tribus-monitor/check-runner
+      - name: Execute check-runner
+        run: node apps/check-runner/dist/index.js
+        env:
+          MONITOR_API_URL: ${{ secrets.MONITOR_API_URL }}
+          MONITOR_CHECKS_TOKEN: ${{ secrets.MONITOR_CHECKS_TOKEN }}
+          TRIBUS_MONITOR_NICHES: ${{ vars.TRIBUS_MONITOR_NICHES || 'corrida' }}
+          TRIBUS_STOREFRONT_BASE_URL: ${{ secrets.TRIBUS_STOREFRONT_BASE_URL }}
+          TRIBUS_OPS_BASE_URL: ${{ secrets.TRIBUS_OPS_BASE_URL }}
+          TRIBUS_BE_BASE_URL: ${{ secrets.TRIBUS_BE_BASE_URL }}

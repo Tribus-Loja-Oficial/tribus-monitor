@@ -1,0 +1,11 @@
+name = "tribus-monitor-api"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+[vars]
+MONITOR_CHECKS_TOKEN = "change-me"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tribus_monitor"
+database_id = "REPLACE_ME"

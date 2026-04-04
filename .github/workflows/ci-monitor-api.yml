@@ -1,0 +1,28 @@
+name: CI Monitor API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/monitor-api/**'
+      - 'packages/core/**'
+      - 'package.json'
+  pull_request:
+    paths:
+      - 'apps/monitor-api/**'
+      - 'packages/core/**'
+      - 'package.json'
+
+jobs:
+  monitor-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run typecheck -w @tribus-monitor/monitor-api
+      - run: npm run lint -w @tribus-monitor/monitor-api
+      - run: npm run test -w @tribus-monitor/monitor-api
+      - run: npm run build -w @tribus-monitor/monitor-api

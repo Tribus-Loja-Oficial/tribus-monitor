@@ -1,0 +1,39 @@
+{
+  "name": "tribus-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @tribus-monitor/core && npm run build -w @tribus-monitor/monitor-api && npm run build -w @tribus-monitor/check-runner && npm run build -w @tribus-monitor/dashboard",
+    "typecheck": "npm run typecheck -w @tribus-monitor/core && npm run typecheck -w @tribus-monitor/monitor-api && npm run typecheck -w @tribus-monitor/check-runner && npm run typecheck -w @tribus-monitor/dashboard",
+    "lint": "npm run lint -w @tribus-monitor/core && npm run lint -w @tribus-monitor/monitor-api && npm run lint -w @tribus-monitor/check-runner && npm run lint -w @tribus-monitor/dashboard",
+    "lint:fix": "npm run lint:fix -w @tribus-monitor/core && npm run lint:fix -w @tribus-monitor/monitor-api && npm run lint:fix -w @tribus-monitor/check-runner && npm run lint:fix -w @tribus-monitor/dashboard",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
+    "test": "npm run test -w @tribus-monitor/core && npm run test -w @tribus-monitor/monitor-api && npm run test -w @tribus-monitor/check-runner && npm run test -w @tribus-monitor/dashboard",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs}": [
+      "eslint --fix"
+    ],
+    "*.{ts,tsx,js,mjs,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "@typescript-eslint/eslint-plugin": "^8.33.1",
+    "@typescript-eslint/parser": "^8.33.1",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.2",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
