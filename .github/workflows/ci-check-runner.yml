@@ -9,6 +9,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/ci-check-runner.yml'
+      - '.github/workflows/runner-cron.yml'
   pull_request:
     branches: [main, development]
     paths:
@@ -17,6 +18,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/ci-check-runner.yml'
+      - '.github/workflows/runner-cron.yml'
 
 concurrency:
   group: ci-check-runner-${{ github.ref }}
