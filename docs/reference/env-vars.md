@@ -10,6 +10,8 @@
 
 - `CLOUDFLARE_API_TOKEN` (vars)
 - `CLOUDFLARE_ACCOUNT_ID` (vars)
+- `MONITOR_CHECKS_TOKEN` (vars)
+- `MONITOR_D1_DATABASE_NAME` (vars, opcional; default `tribus_monitor_db`)
 
 ## check-runner
 

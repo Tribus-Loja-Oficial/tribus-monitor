@@ -32,6 +32,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ vars.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       MONITOR_CHECKS_TOKEN: ${{ vars.MONITOR_CHECKS_TOKEN }}
+      MONITOR_D1_DATABASE_NAME: ${{ vars.MONITOR_D1_DATABASE_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,6 +52,17 @@ jobs:
 
       - name: Build monitor-api
         run: npm run build -w @tribus-monitor/monitor-api
+
+      - name: Sync MONITOR_CHECKS_TOKEN secret
+        working-directory: apps/monitor-api
+        run: |
+          echo "$MONITOR_CHECKS_TOKEN" | npx wrangler secret put MONITOR_CHECKS_TOKEN
+
+      - name: Apply D1 migrations (remote)
+        working-directory: apps/monitor-api
+        run: |
+          DB_NAME="${MONITOR_D1_DATABASE_NAME:-tribus_monitor_db}"
+          npx wrangler d1 migrations apply "$DB_NAME" --remote
 
       - name: Deploy monitor-api via Wrangler
         working-directory: apps/monitor-api

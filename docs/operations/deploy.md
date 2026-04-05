@@ -20,6 +20,9 @@
 
 - Build: `npm run build -w @tribus-monitor/monitor-api`
 - Deploy: workflow `deploy-monitor-api-production.yml` (Wrangler).
+- Antes do deploy, o workflow:
+  - sincroniza o secret `MONITOR_CHECKS_TOKEN` no Worker;
+  - aplica migrations D1 remotas (`wrangler d1 migrations apply`).
 
 ## Check Runner (GitHub Actions)
 
