@@ -28,3 +28,4 @@
 
 - Execução contínua: workflow `runner-cron.yml`.
 - Executa em cron, manual (`workflow_dispatch`) e após CI do runner na `main`.
+- Consome apenas `vars` no environment `PROD` (sem `secrets`).

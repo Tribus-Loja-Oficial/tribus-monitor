@@ -21,6 +21,7 @@ jobs:
   run-checks:
     name: Execute Check Runner (Production)
     runs-on: ubuntu-latest
+    environment: PROD
     if: >
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
@@ -62,9 +63,9 @@ jobs:
       - name: Execute check-runner
         run: node apps/check-runner/dist/index.js
         env:
-          MONITOR_API_URL: ${{ secrets.MONITOR_API_URL }}
-          MONITOR_CHECKS_TOKEN: ${{ secrets.MONITOR_CHECKS_TOKEN }}
+          MONITOR_API_URL: ${{ vars.MONITOR_API_URL }}
+          MONITOR_CHECKS_TOKEN: ${{ vars.MONITOR_CHECKS_TOKEN }}
           TRIBUS_MONITOR_NICHES: ${{ vars.TRIBUS_MONITOR_NICHES || 'corrida' }}
-          TRIBUS_STOREFRONT_BASE_URL: ${{ secrets.TRIBUS_STOREFRONT_BASE_URL }}
-          TRIBUS_OPS_BASE_URL: ${{ secrets.TRIBUS_OPS_BASE_URL }}
-          TRIBUS_BE_BASE_URL: ${{ secrets.TRIBUS_BE_BASE_URL }}
+          TRIBUS_STOREFRONT_BASE_URL: ${{ vars.TRIBUS_STOREFRONT_BASE_URL }}
+          TRIBUS_OPS_BASE_URL: ${{ vars.TRIBUS_OPS_BASE_URL }}
+          TRIBUS_BE_BASE_URL: ${{ vars.TRIBUS_BE_BASE_URL }}

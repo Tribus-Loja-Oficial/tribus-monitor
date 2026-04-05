@@ -22,15 +22,15 @@
 - `TRIBUS_OPS_BASE_URL` (obrigatória)
 - `TRIBUS_BE_BASE_URL` (obrigatória)
 - local: `apps/check-runner/.env.local`
-- github actions: `secrets` e `vars` no repositório
+- github actions: `vars` no environment `PROD`
 
 ### CI/CD (PROD)
 
-- `MONITOR_API_URL` (secrets)
-- `MONITOR_CHECKS_TOKEN` (secrets)
-- `TRIBUS_STOREFRONT_BASE_URL` (secrets)
-- `TRIBUS_OPS_BASE_URL` (secrets)
-- `TRIBUS_BE_BASE_URL` (secrets)
+- `MONITOR_API_URL` (vars)
+- `MONITOR_CHECKS_TOKEN` (vars)
+- `TRIBUS_STOREFRONT_BASE_URL` (vars)
+- `TRIBUS_OPS_BASE_URL` (vars)
+- `TRIBUS_BE_BASE_URL` (vars)
 - `TRIBUS_MONITOR_NICHES` (vars)
 
 ## dashboard
