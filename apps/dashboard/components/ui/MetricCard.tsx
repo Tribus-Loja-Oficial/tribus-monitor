@@ -19,7 +19,7 @@ export function MetricCard({
     <article
       className={`rounded-2xl border p-4 transition ${
         active
-          ? 'border-sky-300/80 bg-gradient-to-br from-sky-50 via-cyan-50 to-white ring-1 ring-sky-200/70 shadow-[0_10px_24px_rgba(14,116,144,0.16)]'
+          ? 'border-blue-300/70 bg-gradient-to-br from-blue-50/70 via-slate-50 to-white ring-1 ring-blue-200/60 shadow-[0_10px_24px_rgba(30,64,175,0.12)]'
           : 'border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)]'
       }`}
     >
