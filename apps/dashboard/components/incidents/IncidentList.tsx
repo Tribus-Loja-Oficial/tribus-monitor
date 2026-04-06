@@ -15,7 +15,18 @@ function formatIncidentDuration(incident: Incident): string {
 }
 
 export function IncidentList({ incidents }: IncidentListProps) {
-  if (incidents.length === 0) return <p className="text-xs text-slate-500">Nenhum incidente.</p>
+  if (incidents.length === 0) {
+    return (
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+        <p className="text-sm font-semibold text-emerald-900">
+          ✅ Nenhum incidente ativo no momento
+        </p>
+        <p className="mt-1 text-xs text-emerald-700">
+          A plataforma segue operando dentro do esperado para os servicos monitorados.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-2">
@@ -27,7 +38,7 @@ export function IncidentList({ incidents }: IncidentListProps) {
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-semibold text-slate-900">{incident.serviceName}</p>
             <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                 incident.resolvedAt ? 'bg-slate-200 text-slate-700' : 'bg-rose-100 text-rose-800'
               }`}
             >
@@ -37,7 +48,9 @@ export function IncidentList({ incidents }: IncidentListProps) {
           <p className="mt-1 text-[11px] text-slate-600">
             Inicio: {incident.startedAt} · Duracao: {formatIncidentDuration(incident)}
           </p>
-          <p className="text-[11px] text-slate-600">Motivo: {incident.openReason ?? 'nao informado'}</p>
+          <p className="text-[11px] text-slate-600">
+            Motivo: {incident.openReason ?? 'nao informado'}
+          </p>
         </article>
       ))}
     </div>
