@@ -71,18 +71,33 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
 
   return (
     <main className="mx-auto max-w-7xl space-y-5 p-4 md:p-7">
-      <header className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-7 shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
-        <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-            Tribus Platform Observability
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
-            Tribus Monitor
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Visao executiva e operacional de disponibilidade, incidentes e qualidade de engenharia.
-          </p>
-          <p className="mt-4 text-xs text-slate-500">Dashboard atualizado {lastUpdatedLabel}</p>
+      <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/70 to-slate-100/70 p-7 shadow-[0_18px_45px_rgba(15,23,42,0.09)] md:p-8">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-slate-300/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-sky-200/20 blur-3xl" />
+
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-3xl">
+            <p className="inline-flex items-center rounded-full border border-slate-300/70 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-600 backdrop-blur">
+              Tribus Platform Observability
+            </p>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 md:text-5xl">
+              Tribus Monitor
+            </h1>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 md:text-base">
+              Visao executiva e operacional de disponibilidade, incidentes e qualidade de
+              engenharia.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-300/70 bg-white/80 p-4 backdrop-blur-sm md:min-w-[260px]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              Atualizacao
+            </p>
+            <p className="mt-1 text-base font-semibold text-slate-900">{lastUpdatedLabel}</p>
+            <p className="mt-2 text-xs text-slate-600">
+              Painel sincronizado automaticamente com os checks operacionais.
+            </p>
+          </div>
         </div>
       </header>
 
