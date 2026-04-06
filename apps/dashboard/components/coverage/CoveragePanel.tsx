@@ -15,6 +15,15 @@ function barWidth(value: number | null) {
   return Math.max(0, Math.min(100, Math.round(value)))
 }
 
+function barTone(value: number | null) {
+  if (value === null) return 'bg-slate-300'
+  if (value >= 90) return 'bg-emerald-500'
+  if (value >= 80) return 'bg-lime-500'
+  if (value >= 70) return 'bg-amber-500'
+  if (value >= 50) return 'bg-orange-500'
+  return 'bg-rose-500'
+}
+
 export function CoveragePanel({ coverage }: CoveragePanelProps) {
   return (
     <SectionCard
@@ -46,7 +55,7 @@ export function CoveragePanel({ coverage }: CoveragePanelProps) {
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full bg-cyan-500 transition-all duration-500"
+                    className={`h-full rounded-full transition-all duration-500 ${barTone(repo.lines)}`}
                     style={{ width: `${barWidth(repo.lines)}%` }}
                   />
                 </div>
@@ -58,7 +67,7 @@ export function CoveragePanel({ coverage }: CoveragePanelProps) {
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full bg-violet-500 transition-all duration-500"
+                    className={`h-full rounded-full transition-all duration-500 ${barTone(repo.functions)}`}
                     style={{ width: `${barWidth(repo.functions)}%` }}
                   />
                 </div>
@@ -70,7 +79,7 @@ export function CoveragePanel({ coverage }: CoveragePanelProps) {
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                    className={`h-full rounded-full transition-all duration-500 ${barTone(repo.branches)}`}
                     style={{ width: `${barWidth(repo.branches)}%` }}
                   />
                 </div>
@@ -82,7 +91,7 @@ export function CoveragePanel({ coverage }: CoveragePanelProps) {
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                    className={`h-full rounded-full transition-all duration-500 ${barTone(repo.statements)}`}
                     style={{ width: `${barWidth(repo.statements)}%` }}
                   />
                 </div>

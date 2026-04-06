@@ -92,13 +92,12 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
         </div>
       </header>
 
-      <section className="grid gap-3 md:grid-cols-3">
-        <MetricCard label="Servicos monitorados" value={data.services.length} icon="🧩" />
+      <section className="grid gap-3 md:grid-cols-2">
         <MetricCard
-          label="Incidentes ativos"
-          value={openIncidents.length}
-          icon="🚨"
-          tone="danger"
+          label="Servicos monitorados"
+          value={data.services.length}
+          icon="🧩"
+          active={activeTab === 'services'}
         />
         <MetricCard
           label={
@@ -106,6 +105,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
           }
           value={coverageAverage === null ? 0 : Math.round(coverageAverage)}
           icon="🧪"
+          active={activeTab === 'coverage'}
         />
       </section>
 
@@ -166,9 +166,12 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
             </div>
             <div className="space-y-4">
               <SectionCard
-                title="Incidentes"
+                title={`Incidentes ativos (${openIncidents.length})`}
                 subtitle="Estado atual e historico recente de incidentes."
               >
+                <div className="mb-3 inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
+                  🚨 Incidentes ativos no momento: {openIncidents.length}
+                </div>
                 <IncidentList incidents={data.incidents} />
               </SectionCard>
               <SectionCard
