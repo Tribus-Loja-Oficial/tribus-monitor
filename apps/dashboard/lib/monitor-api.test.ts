@@ -10,6 +10,7 @@ describe('fetchDashboardData', () => {
         .mockResolvedValueOnce({ ok: true, json: async () => ({ services: [] }) })
         .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
         .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ repos: [] }) })
     )
 
     const data = await fetchDashboardData()
@@ -17,5 +18,6 @@ describe('fetchDashboardData', () => {
     expect(data.incidents).toHaveLength(0)
     expect(data.historyCount).toBe(0)
     expect(data.checks).toHaveLength(0)
+    expect(data.coverage.repos).toHaveLength(3)
   })
 })

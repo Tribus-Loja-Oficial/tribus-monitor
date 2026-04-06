@@ -1,5 +1,5 @@
 import type { CheckResult, Incident, ServiceState } from '@tribus-monitor/core'
-import type { StorageRepositories } from '../types'
+import type { CoverageSnapshot, StorageRepositories } from '../types'
 import { createInMemoryRepositories } from './in-memory'
 
 type D1Prepared = {
@@ -56,6 +56,18 @@ type IncidentRow = {
   close_reason: string | null
 }
 
+type CoverageRow = {
+  repo_key: CoverageSnapshot['repoKey']
+  repo_name: string
+  lines: number
+  functions: number
+  branches: number
+  statements: number
+  commit_sha: string | null
+  run_url: string | null
+  updated_at: string
+}
+
 function asD1Database(binding: unknown): D1DatabaseLike | null {
   if (!binding || typeof binding !== 'object') return null
   if (!('prepare' in binding) || typeof binding.prepare !== 'function') return null
@@ -108,6 +120,20 @@ function mapIncident(row: IncidentRow): Incident {
     statusAtClose: row.status_at_close,
     openReason: row.open_reason,
     closeReason: row.close_reason,
+  }
+}
+
+function mapCoverage(row: CoverageRow): CoverageSnapshot {
+  return {
+    repoKey: row.repo_key,
+    repoName: row.repo_name,
+    lines: row.lines,
+    functions: row.functions,
+    branches: row.branches,
+    statements: row.statements,
+    commitSha: row.commit_sha,
+    runUrl: row.run_url,
+    updatedAt: row.updated_at,
   }
 }
 
@@ -303,6 +329,53 @@ export function createD1Repositories(dbBinding: unknown): StorageRepositories {
           .all<IncidentRow>()
 
         return result.results.map(mapIncident)
+      },
+    },
+    coverage: {
+      async upsert(snapshot) {
+        await db
+          .prepare(
+            `
+            INSERT INTO coverage_snapshots (
+              repo_key, repo_name, lines, functions, branches, statements, commit_sha, run_url, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(repo_key) DO UPDATE SET
+              repo_name = excluded.repo_name,
+              lines = excluded.lines,
+              functions = excluded.functions,
+              branches = excluded.branches,
+              statements = excluded.statements,
+              commit_sha = excluded.commit_sha,
+              run_url = excluded.run_url,
+              updated_at = excluded.updated_at
+            `
+          )
+          .bind(
+            snapshot.repoKey,
+            snapshot.repoName,
+            snapshot.lines,
+            snapshot.functions,
+            snapshot.branches,
+            snapshot.statements,
+            snapshot.commitSha,
+            snapshot.runUrl,
+            snapshot.updatedAt
+          )
+          .run()
+      },
+      async list() {
+        const result = await db
+          .prepare(
+            `
+            SELECT
+              repo_key, repo_name, lines, functions, branches, statements, commit_sha, run_url, updated_at
+            FROM coverage_snapshots
+            ORDER BY repo_key ASC
+            `
+          )
+          .all<CoverageRow>()
+
+        return result.results.map(mapCoverage)
       },
     },
   }

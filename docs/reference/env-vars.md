@@ -3,14 +3,18 @@
 ## monitor-api
 
 - `MONITOR_CHECKS_TOKEN` (obrigatória)
+- `MONITOR_COVERAGE_TOKEN` (opcional; se ausente usa `MONITOR_CHECKS_TOKEN`)
 - local: `apps/monitor-api/.dev.vars`
-- cloudflare workers: `wrangler secret put MONITOR_CHECKS_TOKEN`
+- cloudflare workers:
+  - `wrangler secret put MONITOR_CHECKS_TOKEN`
+  - `wrangler secret put MONITOR_COVERAGE_TOKEN` (opcional)
 
 ### CI/CD (PROD)
 
 - `CLOUDFLARE_API_TOKEN` (vars)
 - `CLOUDFLARE_ACCOUNT_ID` (vars)
 - `MONITOR_CHECKS_TOKEN` (vars)
+- `MONITOR_COVERAGE_TOKEN` (vars, opcional)
 - `MONITOR_D1_DATABASE_NAME` (vars, opcional; default `tribus_monitor_db`)
 
 ## check-runner
@@ -44,3 +48,10 @@
 - `VERCEL_TOKEN` (vars)
 - `VERCEL_ORG_ID` (vars)
 - `VERCEL_PROJECT_ID_DASHBOARD` (vars)
+
+## Publicação automática de cobertura (CI dos 3 repos)
+
+Adicionar nos repositórios `tribus-storefront`, `tribus-ops` e `tribus-monitor`:
+
+- `MONITOR_API_URL` (vars)
+- `MONITOR_COVERAGE_TOKEN` (vars)

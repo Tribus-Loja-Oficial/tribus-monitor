@@ -1,0 +1,72 @@
+name: Publish coverage snapshot — Tribus Monitor
+
+on:
+  workflow_run:
+    workflows:
+      - 'Build & quality checks — Dashboard'
+      - 'Build & quality checks — Monitor API'
+      - 'Build & quality checks — Check Runner'
+    types:
+      - completed
+  workflow_dispatch:
+
+concurrency:
+  group: publish-coverage-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish:
+    name: Publish coverage to monitor-api
+    runs-on: ubuntu-latest
+    environment: PROD
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        (
+          github.event.workflow_run.head_branch == 'main' ||
+          github.event.workflow_run.head_branch == 'development'
+        ) &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      )
+    env:
+      MONITOR_API_URL: ${{ vars.MONITOR_API_URL }}
+      MONITOR_COVERAGE_TOKEN: ${{ vars.MONITOR_COVERAGE_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate coverage summaries
+        run: >
+          npm run test -w @tribus-monitor/core -- --coverage --coverage.reportsDirectory=coverage/core &&
+          npm run test -w @tribus-monitor/monitor-api -- --coverage --coverage.reportsDirectory=coverage/monitor-api &&
+          npm run test -w @tribus-monitor/check-runner -- --coverage --coverage.reportsDirectory=coverage/check-runner &&
+          npm run test -w @tribus-monitor/dashboard -- --coverage --coverage.reportsDirectory=coverage/dashboard
+
+      - name: Publish coverage snapshot
+        run: >
+          node scripts/publish-coverage.mjs
+          --repo-key tribus-monitor
+          --repo-name "Tribus Monitor"
+          --summary coverage/core/coverage-summary.json
+          --summary coverage/monitor-api/coverage-summary.json
+          --summary coverage/check-runner/coverage-summary.json
+          --summary coverage/dashboard/coverage-summary.json

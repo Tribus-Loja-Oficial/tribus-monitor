@@ -53,6 +53,7 @@ npm run start:local -w @tribus-monitor/check-runner
 
 - `MONITOR_API_URL`
 - `MONITOR_CHECKS_TOKEN`
+- `MONITOR_COVERAGE_TOKEN` (opcional; ingest de cobertura dos CIs)
 - `TRIBUS_MONITOR_NICHES` (ex.: `corrida,forro`)
 - `TRIBUS_STOREFRONT_BASE_URL`
 - `TRIBUS_OPS_BASE_URL`

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createApp } from './app'
 
-const env = { MONITOR_CHECKS_TOKEN: 'secret-token' }
+const env = { MONITOR_CHECKS_TOKEN: 'secret-token', MONITOR_COVERAGE_TOKEN: 'coverage-token' }
 
 function mkCheck(ok: boolean, at: string) {
   return {
@@ -84,5 +84,45 @@ describe('monitor-api', () => {
     const closedRes = await app.request('/incidents')
     const closedBody = await closedRes.json()
     expect(closedBody.incidents[0].resolvedAt).toBeTruthy()
+  })
+
+  it('ingests and lists coverage snapshots', async () => {
+    const app = createApp(env)
+    const unauthorized = await app.request('/coverage', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        repoKey: 'tribus-monitor',
+        repoName: 'Tribus Monitor',
+        lines: 99,
+        functions: 100,
+        branches: 98,
+        statements: 100,
+      }),
+    })
+    expect(unauthorized.status).toBe(401)
+
+    const post = await app.request('/coverage', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer coverage-token',
+      },
+      body: JSON.stringify({
+        repoKey: 'tribus-monitor',
+        repoName: 'Tribus Monitor',
+        lines: 99,
+        functions: 100,
+        branches: 98,
+        statements: 100,
+      }),
+    })
+    expect(post.status).toBe(201)
+
+    const list = await app.request('/coverage')
+    expect(list.status).toBe(200)
+    const body = await list.json()
+    expect(body.repos).toHaveLength(1)
+    expect(body.repos[0].repoKey).toBe('tribus-monitor')
   })
 })

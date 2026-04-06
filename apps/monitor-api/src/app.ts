@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { checkIngestSchema, type ServiceState } from '@tribus-monitor/core'
 import { z } from 'zod'
 import { getEnv } from './config/env'
-import { checksAuth } from './middleware/auth'
+import { checksAuth, coverageAuth } from './middleware/auth'
 import { errorHandler } from './middleware/error-handler'
 import { ingestChecks } from './services/ingest.service'
 import { createRepositories } from './storage'
@@ -43,8 +43,42 @@ export function createApp(bindings?: MonitorEnv) {
   app.post('/checks', checksAuth, async (c) => {
     const body = await c.req.json()
     const parsed = checkIngestSchema.parse(body)
-    const result = await ingestChecks(c.get('repositories'), parsed.checks, new Date().toISOString())
+    const result = await ingestChecks(
+      c.get('repositories'),
+      parsed.checks,
+      new Date().toISOString()
+    )
     return ok(c, result, 201)
+  })
+
+  const coverageIngestSchema = z.object({
+    repoKey: z.enum(['tribus-storefront', 'tribus-ops', 'tribus-monitor']),
+    repoName: z.string().min(1),
+    lines: z.number().min(0).max(100),
+    functions: z.number().min(0).max(100),
+    branches: z.number().min(0).max(100),
+    statements: z.number().min(0).max(100),
+    commitSha: z.string().min(1).nullable().optional(),
+    runUrl: z.string().url().nullable().optional(),
+    updatedAt: z.string().datetime().optional(),
+  })
+
+  app.post('/coverage', coverageAuth, async (c) => {
+    const body = await c.req.json()
+    const parsed = coverageIngestSchema.parse(body)
+    const snapshot = {
+      ...parsed,
+      commitSha: parsed.commitSha ?? null,
+      runUrl: parsed.runUrl ?? null,
+      updatedAt: parsed.updatedAt ?? new Date().toISOString(),
+    }
+    await c.get('repositories').coverage.upsert(snapshot)
+    return ok(c, { saved: true }, 201)
+  })
+
+  app.get('/coverage', async (c) => {
+    const rows = await c.get('repositories').coverage.list()
+    return ok(c, { repos: rows })
   })
 
   app.get('/status', async (c) => {
@@ -70,7 +104,13 @@ export function createApp(bindings?: MonitorEnv) {
   })
 
   app.get('/history', async (c) => {
-    const limit = z.coerce.number().int().positive().max(1000).optional().parse(c.req.query('limit'))
+    const limit = z.coerce
+      .number()
+      .int()
+      .positive()
+      .max(1000)
+      .optional()
+      .parse(c.req.query('limit'))
     const serviceKey = z.string().optional().parse(c.req.query('serviceKey'))
     const rows = await c.get('repositories').checkResults.list(limit)
     const filtered = serviceKey ? rows.filter((row) => row.serviceKey === serviceKey) : rows

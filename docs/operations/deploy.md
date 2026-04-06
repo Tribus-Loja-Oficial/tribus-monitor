@@ -29,3 +29,11 @@
 - Execução contínua: workflow `runner-cron.yml`.
 - Executa em cron, manual (`workflow_dispatch`) e após CI do runner na `main`.
 - Consome apenas `vars` no environment `PROD` (sem `secrets`).
+
+## Cobertura de testes (cross-repo)
+
+- `monitor-api` expõe:
+  - `POST /coverage` (ingest protegido por Bearer token)
+  - `GET /coverage` (leitura para dashboard)
+- `tribus-storefront` e `tribus-ops` publicam coverage no CI de `push`.
+- `tribus-monitor` publica coverage agregado pelo workflow `publish-coverage-monitor.yml`.

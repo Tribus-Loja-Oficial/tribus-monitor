@@ -12,6 +12,7 @@ import { ServiceGroupSection } from '../services/ServiceGroupSection'
 import { SectionCard } from '../ui/SectionCard'
 import { IncidentList } from '../incidents/IncidentList'
 import { RecentEventsTimeline } from '../incidents/RecentEventsTimeline'
+import { CoveragePanel } from '../coverage/CoveragePanel'
 
 interface DashboardClientProps {
   initialData: DashboardData
@@ -28,6 +29,7 @@ function groupChecksByService(checks: CheckResult[]): Record<string, CheckResult
 
 export function DashboardClient({ initialData }: DashboardClientProps) {
   const [data, setData] = useState<DashboardData>(initialData)
+  const [activeTab, setActiveTab] = useState<'services' | 'coverage'>('services')
 
   useEffect(() => {
     const intervalId = setInterval(async () => {
@@ -53,7 +55,9 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
     <main className="mx-auto max-w-7xl space-y-4 p-4 md:p-6">
       <header className="rounded-xl border border-slate-200/80 bg-gradient-to-r from-cyan-500 to-blue-600 p-5 text-white shadow-lg">
         <h1 className="text-2xl font-bold md:text-3xl">Tribus Monitor Dashboard</h1>
-        <p className="mt-1 text-sm text-cyan-50">Observabilidade operacional da plataforma Tribus.</p>
+        <p className="mt-1 text-sm text-cyan-50">
+          Observabilidade operacional da plataforma Tribus.
+        </p>
       </header>
 
       <GlobalStatusBanner status={globalStatus} />
@@ -65,20 +69,55 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
         <MetricCard label="Eventos recentes" value={data.historyCount} />
       </section>
 
-      <div className="space-y-3">
-        {groupedServices.map((group) => (
-          <ServiceGroupSection key={group.key} group={group} checksByService={checksByService} />
-        ))}
-      </div>
-
-      <section className="grid gap-3 md:grid-cols-2">
-        <SectionCard title="Incidentes" subtitle="Titulo, duracao, inicio e status atual.">
-          <IncidentList incidents={data.incidents} />
-        </SectionCard>
-        <SectionCard title="Timeline de checks" subtitle="Ultimos eventos de verificacao.">
-          <RecentEventsTimeline checks={data.checks} />
-        </SectionCard>
+      <section className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('services')}
+          className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${
+            activeTab === 'services'
+              ? 'border-cyan-300 bg-cyan-50 text-cyan-800'
+              : 'border-slate-200 bg-white text-slate-600'
+          }`}
+        >
+          Servicos
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('coverage')}
+          className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${
+            activeTab === 'coverage'
+              ? 'border-cyan-300 bg-cyan-50 text-cyan-800'
+              : 'border-slate-200 bg-white text-slate-600'
+          }`}
+        >
+          Cobertura de testes
+        </button>
       </section>
+
+      {activeTab === 'services' ? (
+        <>
+          <div className="space-y-3">
+            {groupedServices.map((group) => (
+              <ServiceGroupSection
+                key={group.key}
+                group={group}
+                checksByService={checksByService}
+              />
+            ))}
+          </div>
+
+          <section className="grid gap-3 md:grid-cols-2">
+            <SectionCard title="Incidentes" subtitle="Titulo, duracao, inicio e status atual.">
+              <IncidentList incidents={data.incidents} />
+            </SectionCard>
+            <SectionCard title="Timeline de checks" subtitle="Ultimos eventos de verificacao.">
+              <RecentEventsTimeline checks={data.checks} />
+            </SectionCard>
+          </section>
+        </>
+      ) : (
+        <CoveragePanel coverage={data.coverage} />
+      )}
     </main>
   )
 }

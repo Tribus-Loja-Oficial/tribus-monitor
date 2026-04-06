@@ -1,9 +1,10 @@
 import type { CheckResult, Incident, ServiceState } from '@tribus-monitor/core'
-import type { StorageRepositories } from '../types'
+import type { CoverageSnapshot, StorageRepositories } from '../types'
 
 const checkResults = new Map<string, CheckResult>()
 const serviceStates = new Map<string, ServiceState>()
 const incidents = new Map<string, Incident>()
+const coverage = new Map<string, CoverageSnapshot>()
 
 export function createInMemoryRepositories(): StorageRepositories {
   return {
@@ -25,7 +26,9 @@ export function createInMemoryRepositories(): StorageRepositories {
         serviceStates.set(state.serviceKey, state)
       },
       async list() {
-        return Array.from(serviceStates.values()).sort((a, b) => a.serviceKey.localeCompare(b.serviceKey))
+        return Array.from(serviceStates.values()).sort((a, b) =>
+          a.serviceKey.localeCompare(b.serviceKey)
+        )
       },
     },
     incidents: {
@@ -54,6 +57,14 @@ export function createInMemoryRepositories(): StorageRepositories {
         return Array.from(incidents.values())
           .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
           .slice(0, limit)
+      },
+    },
+    coverage: {
+      async upsert(snapshot) {
+        coverage.set(snapshot.repoKey, snapshot)
+      },
+      async list() {
+        return Array.from(coverage.values()).sort((a, b) => a.repoKey.localeCompare(b.repoKey))
       },
     },
   }

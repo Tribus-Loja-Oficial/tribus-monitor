@@ -32,6 +32,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ vars.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       MONITOR_CHECKS_TOKEN: ${{ vars.MONITOR_CHECKS_TOKEN }}
+      MONITOR_COVERAGE_TOKEN: ${{ vars.MONITOR_COVERAGE_TOKEN }}
       MONITOR_D1_DATABASE_NAME: ${{ vars.MONITOR_D1_DATABASE_NAME }}
     steps:
       - name: Checkout
@@ -57,6 +58,12 @@ jobs:
         working-directory: apps/monitor-api
         run: |
           echo "$MONITOR_CHECKS_TOKEN" | npx wrangler secret put MONITOR_CHECKS_TOKEN
+
+      - name: Sync MONITOR_COVERAGE_TOKEN secret
+        working-directory: apps/monitor-api
+        run: |
+          COVERAGE_TOKEN="${MONITOR_COVERAGE_TOKEN:-$MONITOR_CHECKS_TOKEN}"
+          echo "$COVERAGE_TOKEN" | npx wrangler secret put MONITOR_COVERAGE_TOKEN
 
       - name: Apply D1 migrations (remote)
         working-directory: apps/monitor-api
