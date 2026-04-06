@@ -71,11 +71,11 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
 
   return (
     <main className="mx-auto max-w-7xl space-y-5 p-4 md:p-7">
-      <header className="relative overflow-hidden rounded-3xl border border-slate-300/70 bg-gradient-to-br from-slate-100/90 via-zinc-50 to-slate-200/75 p-7 shadow-[0_18px_45px_rgba(15,23,42,0.12)] md:p-8">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(118deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.08)_45%,rgba(148,163,184,0.2)_100%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_16%_0%,rgba(255,255,255,0.65)_0%,rgba(255,255,255,0)_55%)]" />
-        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-slate-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-slate-300/20 blur-3xl" />
+      <header className="relative overflow-hidden rounded-3xl border border-slate-400/70 bg-gradient-to-br from-slate-300/85 via-slate-200/80 to-blue-200/55 p-7 shadow-[0_18px_45px_rgba(15,23,42,0.16)] md:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(118deg,rgba(255,255,255,0.5)_0%,rgba(255,255,255,0.1)_38%,rgba(71,85,105,0.2)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_16%_0%,rgba(255,255,255,0.62)_0%,rgba(255,255,255,0)_55%)]" />
+        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-slate-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-blue-300/25 blur-3xl" />
 
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="max-w-3xl">
