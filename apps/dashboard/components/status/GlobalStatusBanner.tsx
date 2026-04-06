@@ -12,9 +12,9 @@ export function GlobalStatusBanner({
   variant = 'default',
 }: GlobalStatusBannerProps) {
   const isCompact = variant === 'compact'
-  const containerBase = isCompact ? 'rounded-2xl px-4 py-3' : 'rounded-2xl px-5 py-4'
-  const titleClass = isCompact ? 'text-xs font-semibold' : 'text-sm font-semibold'
-  const subtitleClass = isCompact ? 'mt-1 text-[11px]' : 'mt-1 text-xs'
+  const containerBase = isCompact ? 'rounded-2xl px-5 py-4' : 'rounded-2xl px-5 py-4'
+  const titleClass = isCompact ? 'text-sm font-semibold leading-none' : 'text-sm font-semibold'
+  const subtitleClass = isCompact ? 'mt-2 text-xs' : 'mt-1 text-xs'
 
   if (status === 'incident_active') {
     return (

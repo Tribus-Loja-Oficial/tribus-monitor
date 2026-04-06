@@ -77,9 +77,9 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
         <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-slate-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-slate-300/20 blur-3xl" />
 
-        <div className="relative flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="max-w-3xl">
-            <p className="inline-flex items-center rounded-full border border-slate-300/70 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-600 backdrop-blur">
+            <p className="inline-flex items-center rounded-full border border-slate-400/70 bg-white/75 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-700 backdrop-blur">
               Tribus Platform Observability
             </p>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 md:text-5xl">
@@ -91,7 +91,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
             </p>
           </div>
 
-          <div className="md:min-w-[320px]">
+          <div className="md:w-[360px] lg:w-[390px]">
             <GlobalStatusBanner
               status={globalStatus}
               lastUpdatedLabel={lastUpdatedLabel}
