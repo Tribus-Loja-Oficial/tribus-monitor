@@ -46,7 +46,8 @@ export function groupServicesByDomain(services: ServiceState[]): ServiceGroup[] 
     {
       key: 'be',
       title: 'Componente BE (WordPress/Woo)',
-      description: 'Checks diretos do backend https://be.tribusloja.com.br e integridade do catalogo.',
+      description:
+        'Checks diretos do backend https://be.tribusloja.com.br e integridade do catalogo.',
       icon: '🗄️',
       services: grouped.be,
     },

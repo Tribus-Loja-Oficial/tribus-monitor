@@ -1,6 +1,8 @@
 import type { ServiceState } from '@tribus-monitor/core'
 
-export function getServiceDescription(service: Pick<ServiceState, 'serviceKey' | 'serviceName'>): string {
+export function getServiceDescription(
+  service: Pick<ServiceState, 'serviceKey' | 'serviceName'>
+): string {
   if (service.serviceKey.startsWith('storefront-page-')) {
     return 'Valida se a pagina publica do nicho responde com sucesso para usuarios finais.'
   }

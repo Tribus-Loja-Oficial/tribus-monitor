@@ -44,7 +44,11 @@ export function shouldCloseIncident(
   return previous.status === 'down' && next.status === 'healthy'
 }
 
-export function buildIncidentOpen(service: ServiceState, reason: string | null, nowIso: string): Incident {
+export function buildIncidentOpen(
+  service: ServiceState,
+  reason: string | null,
+  nowIso: string
+): Incident {
   return {
     id: crypto.randomUUID(),
     serviceKey: service.serviceKey,

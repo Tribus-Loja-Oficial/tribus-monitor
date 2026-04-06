@@ -11,11 +11,15 @@ export function DashboardUnavailable({ reason }: DashboardUnavailableProps) {
     <main className="mx-auto max-w-7xl space-y-4 p-4 md:p-6">
       <header className="rounded-xl border border-slate-200/80 bg-gradient-to-r from-cyan-500 to-blue-600 p-5 text-white shadow-lg">
         <h1 className="text-2xl font-bold md:text-3xl">Tribus Monitor Dashboard</h1>
-        <p className="mt-1 text-sm text-cyan-50">Observabilidade operacional da plataforma Tribus.</p>
+        <p className="mt-1 text-sm text-cyan-50">
+          Observabilidade operacional da plataforma Tribus.
+        </p>
       </header>
 
       <section className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900">
-        <p className="text-sm font-semibold">Nao foi possivel adquirir os dados da monitor API agora.</p>
+        <p className="text-sm font-semibold">
+          Nao foi possivel adquirir os dados da monitor API agora.
+        </p>
         <p className="mt-1 text-xs">
           O dashboard abriu em modo seguro. Tente novamente em alguns segundos.
           {reason ? ` Motivo tecnico: ${reason}.` : ''}

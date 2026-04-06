@@ -42,7 +42,8 @@ export function ServicesPanel({ services }: ServicesPanelProps) {
                 {service.consecutiveFailures}
               </p>
               <p>
-                <span className="font-medium text-slate-700">Ultimo check:</span> {service.lastCheckAt}
+                <span className="font-medium text-slate-700">Ultimo check:</span>{' '}
+                {service.lastCheckAt}
               </p>
               <p>
                 <span className="font-medium text-slate-700">Ultimo erro:</span>{' '}

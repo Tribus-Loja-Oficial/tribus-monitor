@@ -9,7 +9,10 @@ export interface CheckTarget {
   checkType?: 'http' | 'catalog-products'
 }
 
-export async function runHttpCheck(target: CheckTarget, timeoutMs = 15000): Promise<CheckResultInput> {
+export async function runHttpCheck(
+  target: CheckTarget,
+  timeoutMs = 15000
+): Promise<CheckResultInput> {
   const started = Date.now()
   try {
     const response = await fetch(target.url, {

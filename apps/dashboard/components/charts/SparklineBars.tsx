@@ -3,7 +3,8 @@ interface SparklineBarsProps {
 }
 
 export function SparklineBars({ values }: SparklineBarsProps) {
-  if (values.length === 0) return <p className="text-[11px] text-slate-400">Sem historico recente.</p>
+  if (values.length === 0)
+    return <p className="text-[11px] text-slate-400">Sem historico recente.</p>
   const max = Math.max(...values, 1)
   return (
     <div className="flex h-10 items-end gap-1">

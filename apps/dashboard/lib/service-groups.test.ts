@@ -16,7 +16,12 @@ const base: Omit<ServiceState, 'serviceKey' | 'serviceName' | 'kind'> = {
 describe('groupServicesByDomain', () => {
   it('groups services by domain prefixes', () => {
     const groups = groupServicesByDomain([
-      { ...base, serviceKey: 'storefront-health-corrida', serviceName: 'a', kind: 'storefront-api' },
+      {
+        ...base,
+        serviceKey: 'storefront-health-corrida',
+        serviceName: 'a',
+        kind: 'storefront-api',
+      },
       { ...base, serviceKey: 'ops-health-corrida', serviceName: 'b', kind: 'ops-api' },
       { ...base, serviceKey: 'be-catalog-products-corrida', serviceName: 'c', kind: 'be-api' },
     ])
