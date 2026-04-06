@@ -29,8 +29,12 @@ permissions:
 
 jobs:
   tests-and-coverage:
-    name: Test all workspaces
+    name: Test all workspaces & publish coverage
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'push' && 'PROD' || '' }}
+    env:
+      MONITOR_API_URL: ${{ vars.MONITOR_API_URL }}
+      MONITOR_COVERAGE_TOKEN: ${{ vars.MONITOR_COVERAGE_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,48 +58,8 @@ jobs:
           npm run test -w @tribus-monitor/check-runner -- --coverage --reporter=json --outputFile=.vitest-coverage.json &&
           npm run test -w @tribus-monitor/dashboard -- --coverage --reporter=json --outputFile=.vitest-coverage.json
 
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: monitor-coverage-reports
-          path: |
-            packages/core/.vitest-coverage.json
-            apps/monitor-api/.vitest-coverage.json
-            apps/check-runner/.vitest-coverage.json
-            apps/dashboard/.vitest-coverage.json
-
-  publish-coverage:
-    name: Publish coverage to monitor-api
-    needs: tests-and-coverage
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: PROD
-    env:
-      MONITOR_API_URL: ${{ vars.MONITOR_API_URL }}
-      MONITOR_COVERAGE_TOKEN: ${{ vars.MONITOR_COVERAGE_TOKEN }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download coverage reports
-        uses: actions/download-artifact@v4
-        with:
-          name: monitor-coverage-reports
-          path: .
-
       - name: Publish coverage snapshot
+        if: github.event_name == 'push'
         run: >
           node scripts/publish-coverage.mjs
           --repo-key tribus-monitor
