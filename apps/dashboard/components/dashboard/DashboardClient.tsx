@@ -71,9 +71,11 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
 
   return (
     <main className="mx-auto max-w-7xl space-y-5 p-4 md:p-7">
-      <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/70 to-slate-100/70 p-7 shadow-[0_18px_45px_rgba(15,23,42,0.09)] md:p-8">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-slate-300/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-sky-200/20 blur-3xl" />
+      <header className="relative overflow-hidden rounded-3xl border border-slate-300/70 bg-gradient-to-br from-slate-100/90 via-zinc-50 to-slate-200/75 p-7 shadow-[0_18px_45px_rgba(15,23,42,0.12)] md:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(118deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.08)_45%,rgba(148,163,184,0.2)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_70%_at_16%_0%,rgba(255,255,255,0.65)_0%,rgba(255,255,255,0)_55%)]" />
+        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-slate-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-slate-300/20 blur-3xl" />
 
         <div className="relative flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
@@ -89,19 +91,15 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-300/70 bg-white/80 p-4 backdrop-blur-sm md:min-w-[260px]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Atualizacao
-            </p>
-            <p className="mt-1 text-base font-semibold text-slate-900">{lastUpdatedLabel}</p>
-            <p className="mt-2 text-xs text-slate-600">
-              Painel sincronizado automaticamente com os checks operacionais.
-            </p>
+          <div className="md:min-w-[320px]">
+            <GlobalStatusBanner
+              status={globalStatus}
+              lastUpdatedLabel={lastUpdatedLabel}
+              variant="compact"
+            />
           </div>
         </div>
       </header>
-
-      <GlobalStatusBanner status={globalStatus} lastUpdatedLabel={lastUpdatedLabel} />
 
       <section className="grid gap-3 md:grid-cols-2">
         <MetricCard
