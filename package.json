@@ -14,7 +14,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
     "test": "npm run test -w @tribus-monitor/core && npm run test -w @tribus-monitor/monitor-api && npm run test -w @tribus-monitor/check-runner && npm run test -w @tribus-monitor/dashboard",
-    "trigger:all-monitor-workflows": "echo \"Trigger all monitor CI/deploy workflows via package.json change.\"",
+    "trigger:all-monitor-workflows": "echo \"Trigger all monitor CI/deploy workflows via package.json change\"",
     "prepare": "husky"
   },
   "lint-staged": {

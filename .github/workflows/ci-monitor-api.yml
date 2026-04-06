@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   quality:
-    name: Lint, Typecheck, Test & Build (Monitor API)
+    name: Lint, Typecheck & Build (Monitor API)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -48,9 +48,6 @@ jobs:
 
       - name: Lint
         run: npm run lint -w @tribus-monitor/monitor-api
-
-      - name: Tests
-        run: npm run test -w @tribus-monitor/monitor-api
 
       - name: Build
         run: npm run build -w @tribus-monitor/monitor-api

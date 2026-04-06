@@ -1,47 +1,40 @@
-name: Publish coverage snapshot — Tribus Monitor
+name: Tests & coverage — Tribus Monitor
 
 on:
-  workflow_run:
-    workflows:
-      - 'Build & quality checks — Dashboard'
-      - 'Build & quality checks — Monitor API'
-      - 'Build & quality checks — Check Runner'
-    types:
-      - completed
+  push:
+    branches: [main, development]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/publish-coverage-monitor.yml'
+  pull_request:
+    branches: [main, development]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/publish-coverage-monitor.yml'
   workflow_dispatch:
 
 concurrency:
-  group: publish-coverage-monitor
-  cancel-in-progress: false
+  group: tests-coverage-monitor-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
   actions: read
 
 jobs:
-  publish:
-    name: Publish coverage to monitor-api
+  tests-and-coverage:
+    name: Test all workspaces
     runs-on: ubuntu-latest
-    environment: PROD
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.event == 'push' &&
-        (
-          github.event.workflow_run.head_branch == 'main' ||
-          github.event.workflow_run.head_branch == 'development'
-        ) &&
-        github.event.workflow_run.head_repository.full_name == github.repository
-      )
-    env:
-      MONITOR_API_URL: ${{ vars.MONITOR_API_URL }}
-      MONITOR_COVERAGE_TOKEN: ${{ vars.MONITOR_COVERAGE_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
           fetch-depth: 1
 
       - name: Setup Node.js
@@ -60,6 +53,47 @@ jobs:
           npm run test -w @tribus-monitor/monitor-api -- --coverage --reporter=json --outputFile=.vitest-coverage.json &&
           npm run test -w @tribus-monitor/check-runner -- --coverage --reporter=json --outputFile=.vitest-coverage.json &&
           npm run test -w @tribus-monitor/dashboard -- --coverage --reporter=json --outputFile=.vitest-coverage.json
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-coverage-reports
+          path: |
+            packages/core/.vitest-coverage.json
+            apps/monitor-api/.vitest-coverage.json
+            apps/check-runner/.vitest-coverage.json
+            apps/dashboard/.vitest-coverage.json
+
+  publish-coverage:
+    name: Publish coverage to monitor-api
+    needs: tests-and-coverage
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: PROD
+    env:
+      MONITOR_API_URL: ${{ vars.MONITOR_API_URL }}
+      MONITOR_COVERAGE_TOKEN: ${{ vars.MONITOR_COVERAGE_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: monitor-coverage-reports
+          path: .
 
       - name: Publish coverage snapshot
         run: >

@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   quality:
-    name: Lint, Typecheck, Test & Build (Dashboard)
+    name: Lint, Typecheck & Build (Dashboard)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -48,9 +48,6 @@ jobs:
 
       - name: Lint
         run: npm run lint -w @tribus-monitor/dashboard
-
-      - name: Tests
-        run: npm run test -w @tribus-monitor/dashboard
 
       - name: Build
         run: npm run build -w @tribus-monitor/dashboard
