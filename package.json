@@ -2,6 +2,9 @@
   "name": "tribus-monitor",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -14,6 +17,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
     "test": "npm run test -w @tribus-monitor/core && npm run test -w @tribus-monitor/monitor-api && npm run test -w @tribus-monitor/check-runner && npm run test -w @tribus-monitor/dashboard",
+    "test:coverage": "npm run test -w @tribus-monitor/core -- --coverage && npm run test -w @tribus-monitor/monitor-api -- --coverage && npm run test -w @tribus-monitor/check-runner -- --coverage && npm run test -w @tribus-monitor/dashboard -- --coverage",
+    "test:staged": "node scripts/vitest-staged.mjs",
+    "quality:check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage",
     "trigger:all-monitor-workflows": "echo \"Trigger all monitor CI/deploy workflows via package.json change.\"",
     "prepare": "husky"
   },

@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   quality:
-    name: Lint, Typecheck & Build (Check Runner)
+    name: Format, Lint, Typecheck, Test & Build (Check Runner)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -45,11 +45,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Format check
+        run: npm run format:check
+
       - name: Typecheck
         run: npm run typecheck -w @tribus-monitor/check-runner
 
       - name: Lint
         run: npm run lint -w @tribus-monitor/check-runner
+
+      - name: Test
+        run: npm run test -w @tribus-monitor/check-runner
 
       - name: Build
         run: npm run build -w @tribus-monitor/check-runner

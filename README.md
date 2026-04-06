@@ -30,7 +30,20 @@ npm run lint
 npm run test
 ```
 
+## Documentação
+
+- Guia principal: `docs/README.md`
+- Contexto para agentes/automação: `docs/ai-context/project-context.md`
+- Regras de desenvolvimento: `docs/ai-context/development-rules.md`
+
 ## Arquivos locais de ambiente
+
+- Copie o template raiz para facilitar integrações locais:
+
+```bash
+cp .env.example .env.local
+# PowerShell: Copy-Item .env.example .env.local
+```
 
 - `apps/monitor-api/.dev.vars` (Wrangler local)
 - `apps/dashboard/.env.local` (Next local)
