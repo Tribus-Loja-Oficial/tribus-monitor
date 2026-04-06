@@ -6,7 +6,7 @@ function parseArgs(argv) {
   const args = {
     repoKey: '',
     repoName: '',
-    summaries: [],
+    reports: [],
   }
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -22,34 +22,90 @@ function parseArgs(argv) {
       i += 1
       continue
     }
-    if (current === '--summary' && next) {
-      args.summaries.push(next)
+    if (current === '--report' && next) {
+      args.reports.push(next)
       i += 1
     }
   }
 
-  if (!args.repoKey || !args.repoName || args.summaries.length === 0) {
+  if (!args.repoKey || !args.repoName || args.reports.length === 0) {
     throw new Error(
-      'Usage: node scripts/publish-coverage.mjs --repo-key <key> --repo-name <name> --summary <path> [--summary <path>...]'
+      'Usage: node scripts/publish-coverage.mjs --repo-key <key> --repo-name <name> --report <path> [--report <path>...]'
     )
   }
 
   return args
 }
 
-async function readSummary(path) {
-  const content = await readFile(path, 'utf8')
-  const parsed = JSON.parse(content)
-  return parsed.total
-}
-
-function mergeTotals(totals) {
-  const base = {
+function emptyTotals() {
+  return {
     lines: { covered: 0, total: 0 },
     functions: { covered: 0, total: 0 },
     branches: { covered: 0, total: 0 },
     statements: { covered: 0, total: 0 },
   }
+}
+
+async function readReport(path) {
+  const content = await readFile(path, 'utf8')
+  const parsed = JSON.parse(content)
+  const coverageMap = parsed.coverageMap
+  if (!coverageMap || typeof coverageMap !== 'object') {
+    throw new Error(`Invalid vitest report (missing coverageMap): ${path}`)
+  }
+
+  const totals = emptyTotals()
+
+  for (const file of Object.values(coverageMap)) {
+    if (!file || typeof file !== 'object') continue
+    const entry = file
+
+    const statementCounts = entry.s ?? {}
+    const statementKeys = Object.keys(statementCounts)
+    totals.statements.total += statementKeys.length
+    totals.statements.covered += statementKeys.reduce(
+      (acc, key) => acc + (Number(statementCounts[key]) > 0 ? 1 : 0),
+      0
+    )
+
+    const functionCounts = entry.f ?? {}
+    const functionKeys = Object.keys(functionCounts)
+    totals.functions.total += functionKeys.length
+    totals.functions.covered += functionKeys.reduce(
+      (acc, key) => acc + (Number(functionCounts[key]) > 0 ? 1 : 0),
+      0
+    )
+
+    const branchCounts = entry.b ?? {}
+    for (const branchValues of Object.values(branchCounts)) {
+      if (!Array.isArray(branchValues)) continue
+      totals.branches.total += branchValues.length
+      totals.branches.covered += branchValues.reduce(
+        (acc, hits) => acc + (Number(hits) > 0 ? 1 : 0),
+        0
+      )
+    }
+
+    const statementMap = entry.statementMap ?? {}
+    const lineHits = new Map()
+    for (const [statementId, loc] of Object.entries(statementMap)) {
+      const line = loc?.start?.line
+      if (typeof line !== 'number') continue
+      const hits = Number(statementCounts[statementId] ?? 0)
+      lineHits.set(line, (lineHits.get(line) ?? 0) + hits)
+    }
+    totals.lines.total += lineHits.size
+    totals.lines.covered += Array.from(lineHits.values()).reduce(
+      (acc, hits) => acc + (Number(hits) > 0 ? 1 : 0),
+      0
+    )
+  }
+
+  return totals
+}
+
+function mergeTotals(totals) {
+  const base = emptyTotals()
 
   for (const item of totals) {
     for (const key of Object.keys(base)) {
@@ -70,14 +126,14 @@ function pct(covered, total) {
 }
 
 async function main() {
-  const { repoKey, repoName, summaries } = parseArgs(process.argv.slice(2))
+  const { repoKey, repoName, reports } = parseArgs(process.argv.slice(2))
   const apiBaseUrl = process.env.MONITOR_API_URL
   const token = process.env.MONITOR_COVERAGE_TOKEN
   if (!apiBaseUrl || !token) {
     throw new Error('Missing MONITOR_API_URL or MONITOR_COVERAGE_TOKEN.')
   }
 
-  const totals = await Promise.all(summaries.map((path) => readSummary(path)))
+  const totals = await Promise.all(reports.map((path) => readReport(path)))
   const merged = mergeTotals(totals)
 
   const runUrl =

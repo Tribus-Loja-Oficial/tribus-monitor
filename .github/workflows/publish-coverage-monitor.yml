@@ -54,19 +54,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate coverage summaries
+      - name: Generate coverage reports
         run: >
-          npm run test -w @tribus-monitor/core -- --coverage --coverage.reportsDirectory=coverage/core &&
-          npm run test -w @tribus-monitor/monitor-api -- --coverage --coverage.reportsDirectory=coverage/monitor-api &&
-          npm run test -w @tribus-monitor/check-runner -- --coverage --coverage.reportsDirectory=coverage/check-runner &&
-          npm run test -w @tribus-monitor/dashboard -- --coverage --coverage.reportsDirectory=coverage/dashboard
+          npm run test -w @tribus-monitor/core -- --coverage --reporter=json --outputFile=.vitest-coverage.json &&
+          npm run test -w @tribus-monitor/monitor-api -- --coverage --reporter=json --outputFile=.vitest-coverage.json &&
+          npm run test -w @tribus-monitor/check-runner -- --coverage --reporter=json --outputFile=.vitest-coverage.json &&
+          npm run test -w @tribus-monitor/dashboard -- --coverage --reporter=json --outputFile=.vitest-coverage.json
 
       - name: Publish coverage snapshot
         run: >
           node scripts/publish-coverage.mjs
           --repo-key tribus-monitor
           --repo-name "Tribus Monitor"
-          --summary coverage/core/coverage-summary.json
-          --summary coverage/monitor-api/coverage-summary.json
-          --summary coverage/check-runner/coverage-summary.json
-          --summary coverage/dashboard/coverage-summary.json
+          --report packages/core/.vitest-coverage.json
+          --report apps/monitor-api/.vitest-coverage.json
+          --report apps/check-runner/.vitest-coverage.json
+          --report apps/dashboard/.vitest-coverage.json
