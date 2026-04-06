@@ -10,6 +10,11 @@ function fmt(value: number | null) {
   return `${value.toFixed(2)}%`
 }
 
+function barWidth(value: number | null) {
+  if (value === null) return 0
+  return Math.max(0, Math.min(100, Math.round(value)))
+}
+
 export function CoveragePanel({ coverage }: CoveragePanelProps) {
   return (
     <SectionCard
@@ -33,22 +38,54 @@ export function CoveragePanel({ coverage }: CoveragePanelProps) {
               ) : null}
             </div>
 
-            <dl className="mt-3 space-y-1 text-sm">
-              <div className="flex items-center justify-between">
-                <dt className="text-slate-600">Lines</dt>
-                <dd className="font-semibold text-slate-900">{fmt(repo.lines)}</dd>
+            <dl className="mt-3 space-y-2 text-sm">
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <dt className="text-slate-600">Lines</dt>
+                  <dd className="font-semibold text-slate-900">{fmt(repo.lines)}</dd>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-cyan-500 transition-all duration-500"
+                    style={{ width: `${barWidth(repo.lines)}%` }}
+                  />
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-slate-600">Functions</dt>
-                <dd className="font-semibold text-slate-900">{fmt(repo.functions)}</dd>
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <dt className="text-slate-600">Functions</dt>
+                  <dd className="font-semibold text-slate-900">{fmt(repo.functions)}</dd>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-violet-500 transition-all duration-500"
+                    style={{ width: `${barWidth(repo.functions)}%` }}
+                  />
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-slate-600">Branches</dt>
-                <dd className="font-semibold text-slate-900">{fmt(repo.branches)}</dd>
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <dt className="text-slate-600">Branches</dt>
+                  <dd className="font-semibold text-slate-900">{fmt(repo.branches)}</dd>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                    style={{ width: `${barWidth(repo.branches)}%` }}
+                  />
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-slate-600">Statements</dt>
-                <dd className="font-semibold text-slate-900">{fmt(repo.statements)}</dd>
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <dt className="text-slate-600">Statements</dt>
+                  <dd className="font-semibold text-slate-900">{fmt(repo.statements)}</dd>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                    style={{ width: `${barWidth(repo.statements)}%` }}
+                  />
+                </div>
               </div>
             </dl>
 

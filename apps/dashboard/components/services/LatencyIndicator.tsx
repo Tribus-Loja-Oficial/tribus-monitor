@@ -4,6 +4,6 @@ interface LatencyIndicatorProps {
 
 export function LatencyIndicator({ latencyMs }: LatencyIndicatorProps) {
   const tone =
-    latencyMs >= 3000 ? 'text-rose-700' : latencyMs >= 1200 ? 'text-amber-700' : 'text-emerald-700'
-  return <span className={`text-xs font-medium ${tone}`}>{latencyMs}ms</span>
+    latencyMs > 1500 ? 'text-rose-700' : latencyMs >= 500 ? 'text-amber-700' : 'text-emerald-700'
+  return <span className={`text-lg font-semibold tabular-nums ${tone}`}>{latencyMs}ms</span>
 }

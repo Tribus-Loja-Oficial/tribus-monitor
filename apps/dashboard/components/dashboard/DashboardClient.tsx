@@ -5,6 +5,7 @@ import type { CheckResult } from '@tribus-monitor/core'
 import type { DashboardData } from '../../lib/monitor-api'
 import { getGlobalPlatformStatus } from '../../lib/status'
 import { groupServicesByDomain } from '../../lib/service-groups'
+import { formatTimeAgo } from '../../lib/time'
 import { GlobalStatusBanner } from '../status/GlobalStatusBanner'
 import { ModulesOverview } from '../ModulesOverview'
 import { MetricCard } from '../ui/MetricCard'
@@ -50,9 +51,18 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
   const checksByService = useMemo(() => groupChecksByService(data.checks), [data.checks])
   const openIncidents = data.incidents.filter((incident) => incident.resolvedAt === null)
   const globalStatus = getGlobalPlatformStatus(data.services)
+  const lastUpdatedLabel = useMemo(() => {
+    const firstCheck = data.checks[0]
+    if (!firstCheck) return 'sem dados recentes'
+    const latest = data.checks.reduce(
+      (acc, curr) => (curr.checkedAt > acc ? curr.checkedAt : acc),
+      firstCheck.checkedAt
+    )
+    return formatTimeAgo(latest)
+  }, [data.checks])
 
   return (
-    <main className="mx-auto max-w-7xl space-y-4 p-4 md:p-6">
+    <main className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
       <header className="rounded-xl border border-slate-200/80 bg-gradient-to-r from-cyan-500 to-blue-600 p-5 text-white shadow-lg">
         <h1 className="text-2xl font-bold md:text-3xl">Tribus Monitor Dashboard</h1>
         <p className="mt-1 text-sm text-cyan-50">
@@ -60,23 +70,28 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
         </p>
       </header>
 
-      <GlobalStatusBanner status={globalStatus} />
+      <GlobalStatusBanner status={globalStatus} lastUpdatedLabel={lastUpdatedLabel} />
       <ModulesOverview />
 
       <section className="grid gap-3 md:grid-cols-3">
-        <MetricCard label="Servicos monitorados" value={data.services.length} />
-        <MetricCard label="Incidentes abertos" value={openIncidents.length} tone="danger" />
-        <MetricCard label="Eventos recentes" value={data.historyCount} />
+        <MetricCard label="Servicos monitorados" value={data.services.length} icon="🧩" />
+        <MetricCard
+          label="Incidentes abertos"
+          value={openIncidents.length}
+          icon="🚨"
+          tone="danger"
+        />
+        <MetricCard label="Eventos recentes" value={data.historyCount} icon="🕒" />
       </section>
 
-      <section className="flex flex-wrap gap-2">
+      <section className="rounded-xl border border-slate-200/80 bg-white/80 p-1">
         <button
           type="button"
           onClick={() => setActiveTab('services')}
-          className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${
+          className={`rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
             activeTab === 'services'
-              ? 'border-cyan-300 bg-cyan-50 text-cyan-800'
-              : 'border-slate-200 bg-white text-slate-600'
+              ? 'bg-cyan-600 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           Servicos
@@ -84,14 +99,17 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
         <button
           type="button"
           onClick={() => setActiveTab('coverage')}
-          className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${
+          className={`rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
             activeTab === 'coverage'
-              ? 'border-cyan-300 bg-cyan-50 text-cyan-800'
-              : 'border-slate-200 bg-white text-slate-600'
+              ? 'bg-cyan-600 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           Cobertura de testes
         </button>
+        <span className="ml-3 inline-flex items-center text-[11px] text-slate-500">
+          Atualizado {lastUpdatedLabel}
+        </span>
       </section>
 
       {activeTab === 'services' ? (
