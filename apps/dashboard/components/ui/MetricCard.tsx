@@ -13,16 +13,20 @@ export function MetricCard({
   tone = 'default',
   active = false,
 }: MetricCardProps) {
-  const valueColor = tone === 'danger' ? 'text-rose-600' : 'text-slate-900'
+  const valueColor = tone === 'danger' ? 'text-rose-700' : 'text-slate-900'
   return (
     <article
-      className={`rounded-xl border bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
-        active ? 'scale-[1.02] border-cyan-300 shadow-md shadow-cyan-100' : 'border-slate-200/80'
+      className={`rounded-2xl border p-4 transition ${
+        active
+          ? 'border-slate-300 bg-slate-50 shadow-[0_4px_12px_rgba(15,23,42,0.08)]'
+          : 'border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)]'
       }`}
     >
-      <p className="text-sm">{icon}</p>
-      <p className={`mt-1 text-4xl font-semibold leading-none ${valueColor}`}>{value}</p>
-      <h2 className="mt-2 text-xs font-medium text-slate-600">{label}</h2>
+      <div className="flex items-center gap-2">
+        <span className="text-sm">{icon}</span>
+      </div>
+      <p className={`mt-2 text-4xl font-semibold leading-none ${valueColor}`}>{value}</p>
+      <h2 className="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">{label}</h2>
     </article>
   )
 }

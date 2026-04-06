@@ -70,27 +70,23 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
   }, [data.checks])
 
   return (
-    <main className="mx-auto max-w-7xl space-y-7 p-4 md:p-7">
-      <header className="rounded-2xl border border-slate-200/60 bg-gradient-to-r from-slate-900 via-cyan-900 to-blue-900 p-6 text-white shadow-xl shadow-cyan-900/20">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-cyan-100/80">
-              Tribus Platform Observability
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
-              Tribus Monitor
-            </h1>
-            <p className="mt-2 text-sm text-cyan-50/90">
-              Visao executiva e operacional de disponibilidade, incidentes e qualidade de
-              engenharia.
-            </p>
-            <p className="mt-3 text-xs text-cyan-100/80">Dashboard atualizado {lastUpdatedLabel}</p>
-          </div>
-          <div className="min-w-[250px] flex-1">
-            <GlobalStatusBanner status={globalStatus} lastUpdatedLabel={lastUpdatedLabel} />
-          </div>
+    <main className="mx-auto max-w-7xl space-y-5 p-4 md:p-7">
+      <header className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-7 shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
+        <div>
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+            Tribus Platform Observability
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+            Tribus Monitor
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Visao executiva e operacional de disponibilidade, incidentes e qualidade de engenharia.
+          </p>
+          <p className="mt-4 text-xs text-slate-500">Dashboard atualizado {lastUpdatedLabel}</p>
         </div>
       </header>
+
+      <GlobalStatusBanner status={globalStatus} lastUpdatedLabel={lastUpdatedLabel} />
 
       <section className="grid gap-3 md:grid-cols-2">
         <MetricCard
@@ -109,105 +105,109 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
         />
       </section>
 
-      <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-1.5 shadow-sm">
-        <button
-          type="button"
-          onClick={() => setActiveTab('services')}
-          className={`rounded-xl px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
-            activeTab === 'services'
-              ? 'bg-cyan-600 text-white shadow-sm shadow-cyan-200'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Servicos
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('coverage')}
-          className={`rounded-xl px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
-            activeTab === 'coverage'
-              ? 'bg-cyan-600 text-white shadow-sm shadow-cyan-200'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Cobertura de testes
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('business')}
-          className={`rounded-xl px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
-            activeTab === 'business'
-              ? 'bg-cyan-600 text-white shadow-sm shadow-cyan-200'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Validacoes de negocio
-        </button>
-      </section>
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
+        <nav className="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50/80 p-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab('services')}
+            className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
+              activeTab === 'services'
+                ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
+                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
+            }`}
+          >
+            Servicos
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('coverage')}
+            className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
+              activeTab === 'coverage'
+                ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
+                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
+            }`}
+          >
+            Cobertura de testes
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('business')}
+            className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
+              activeTab === 'business'
+                ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
+                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
+            }`}
+          >
+            Validacoes de negocio
+          </button>
+        </nav>
 
-      {activeTab === 'services' ? (
-        <>
-          <header className="space-y-1">
-            <h2 className="text-sm font-semibold text-slate-900">Servicos</h2>
-            <p className="text-xs text-slate-600">
-              Monitoramento operacional por dominio da plataforma, com foco em leitura rapida e
-              sinais de gravidade.
-            </p>
-          </header>
-          <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
-            <div className="space-y-4">
-              {groupedServices.map((group) => (
-                <ServiceGroupSection
-                  key={group.key}
-                  group={group}
-                  checksByService={checksByService}
-                />
-              ))}
-            </div>
-            <div className="space-y-4">
-              <SectionCard
-                title={`Incidentes ativos (${openIncidents.length})`}
-                subtitle="Estado atual e historico recente de incidentes."
-              >
-                <div className="mb-3 inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
-                  🚨 Incidentes ativos no momento: {openIncidents.length}
+        <div className="p-4 md:p-5">
+          {activeTab === 'services' ? (
+            <section className="space-y-4">
+              <header className="space-y-1">
+                <h2 className="text-sm font-semibold text-slate-900">Servicos</h2>
+                <p className="text-xs text-slate-600">
+                  Monitoramento operacional por dominio da plataforma, com foco em leitura rapida e
+                  sinais de gravidade.
+                </p>
+              </header>
+              <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+                <div className="space-y-4">
+                  {groupedServices.map((group) => (
+                    <ServiceGroupSection
+                      key={group.key}
+                      group={group}
+                      checksByService={checksByService}
+                    />
+                  ))}
                 </div>
-                <IncidentList incidents={data.incidents} />
-              </SectionCard>
-              <SectionCard
-                title="Timeline de verificacoes"
-                subtitle="Sequencia temporal dos checks mais recentes."
-              >
-                <RecentEventsTimeline checks={data.checks} />
-              </SectionCard>
-            </div>
-          </section>
-        </>
-      ) : activeTab === 'coverage' ? (
-        <>
-          <header className="space-y-1">
-            <h2 className="text-sm font-semibold text-slate-900">Cobertura de testes</h2>
-            <p className="text-xs text-slate-600">
-              Indicadores de qualidade de engenharia publicados automaticamente pelos pipelines dos
-              repositorios Tribus.
-            </p>
-          </header>
-          <CoveragePanel coverage={data.coverage} />
-        </>
-      ) : (
-        <SectionCard
-          title="Validacoes de negocio"
-          subtitle="Modulo planejado para regras operacionais, sinais de negocio e consistencia de dados."
-        >
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-700">
-            <p className="font-medium text-slate-900">Em evolucao</p>
-            <p className="mt-1">
-              Esta area sera dedicada a verificacoes de negocio (SLA de pedidos, saude de funis,
-              integridade de catalogo e alertas de risco operacional).
-            </p>
-          </div>
-        </SectionCard>
-      )}
+                <div className="space-y-4">
+                  <SectionCard
+                    title={`Incidentes ativos (${openIncidents.length})`}
+                    subtitle="Estado atual e historico recente de incidentes."
+                  >
+                    <div className="mb-3 inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
+                      🚨 Incidentes ativos no momento: {openIncidents.length}
+                    </div>
+                    <IncidentList incidents={data.incidents} />
+                  </SectionCard>
+                  <SectionCard
+                    title="Timeline de verificacoes"
+                    subtitle="Sequencia temporal dos checks mais recentes."
+                  >
+                    <RecentEventsTimeline checks={data.checks} />
+                  </SectionCard>
+                </div>
+              </section>
+            </section>
+          ) : activeTab === 'coverage' ? (
+            <section className="space-y-4">
+              <header className="space-y-1">
+                <h2 className="text-sm font-semibold text-slate-900">Cobertura de testes</h2>
+                <p className="text-xs text-slate-600">
+                  Indicadores de qualidade de engenharia publicados automaticamente pelos pipelines
+                  dos repositorios Tribus.
+                </p>
+              </header>
+              <CoveragePanel coverage={data.coverage} />
+            </section>
+          ) : (
+            <SectionCard
+              title="Validacoes de negocio"
+              subtitle="Modulo planejado para regras operacionais, sinais de negocio e consistencia de dados."
+            >
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-700">
+                <p className="font-medium text-slate-900">Em evolucao</p>
+                <p className="mt-1">
+                  Esta area sera dedicada a verificacoes de negocio (SLA de pedidos, saude de funis,
+                  integridade de catalogo e alertas de risco operacional).
+                </p>
+              </div>
+            </SectionCard>
+          )}
+        </div>
+      </section>
     </main>
   )
 }
