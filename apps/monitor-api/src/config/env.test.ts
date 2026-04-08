@@ -24,8 +24,16 @@ describe('getEnv', () => {
   })
 
   it('falls back coverage token to checks token when coverage missing', () => {
-    const env = getEnv({ MONITOR_CHECKS_TOKEN: 'only' })
-    expect(env.MONITOR_COVERAGE_TOKEN).toBe('only')
+    // GHA sets MONITOR_COVERAGE_TOKEN on the job; must not leak into this case
+    const prevCoverage = process.env.MONITOR_COVERAGE_TOKEN
+    delete process.env.MONITOR_COVERAGE_TOKEN
+    try {
+      const env = getEnv({ MONITOR_CHECKS_TOKEN: 'only' })
+      expect(env.MONITOR_COVERAGE_TOKEN).toBe('only')
+    } finally {
+      if (prevCoverage === undefined) delete process.env.MONITOR_COVERAGE_TOKEN
+      else process.env.MONITOR_COVERAGE_TOKEN = prevCoverage
+    }
   })
 
   it('throws on invalid env', () => {
