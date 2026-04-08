@@ -30,7 +30,7 @@ export function CoveragePanel({ coverage }: CoveragePanelProps) {
       title="Cobertura de testes"
       subtitle="Linhas, funcoes, branches e statements dos repositorios monitorados."
     >
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {coverage.repos.map((repo) => (
           <article key={repo.key} className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
             <div className="flex items-start justify-between gap-2">

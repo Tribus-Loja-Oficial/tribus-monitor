@@ -1,6 +1,6 @@
 import type { CheckResult, Incident, ServiceState } from '@tribus-monitor/core'
 
-export type CoverageRepoKey = 'tribus-storefront' | 'tribus-ops' | 'tribus-monitor'
+export type CoverageRepoKey = 'tribus-storefront' | 'tribus-ops' | 'tribus-monitor' | 'real-state'
 
 export interface CoverageSnapshot {
   repoKey: CoverageRepoKey

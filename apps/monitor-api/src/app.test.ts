@@ -125,4 +125,26 @@ describe('monitor-api', () => {
     expect(body.repos).toHaveLength(1)
     expect(body.repos[0].repoKey).toBe('tribus-monitor')
   })
+
+  it('accepts real-state coverage snapshots', async () => {
+    const app = createApp(env)
+    const post = await app.request('/coverage', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer coverage-token',
+      },
+      body: JSON.stringify({
+        repoKey: 'real-state',
+        repoName: 'Real State Landing',
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100,
+        commitSha: null,
+        runUrl: null,
+      }),
+    })
+    expect(post.status).toBe(201)
+  })
 })

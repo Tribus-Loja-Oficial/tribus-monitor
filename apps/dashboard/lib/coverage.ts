@@ -1,5 +1,5 @@
 export interface CoverageRepoSnapshot {
-  key: 'tribus-storefront' | 'tribus-ops' | 'tribus-monitor'
+  key: 'tribus-storefront' | 'tribus-ops' | 'tribus-monitor' | 'real-state'
   name: string
   lines: number | null
   functions: number | null
@@ -44,6 +44,16 @@ export const DEFAULT_REPOS: CoverageRepoSnapshot[] = [
     updatedAt: null,
     sourceUrl: null,
   },
+  {
+    key: 'real-state',
+    name: 'Real State Landing',
+    lines: null,
+    functions: null,
+    branches: null,
+    statements: null,
+    updatedAt: null,
+    sourceUrl: null,
+  },
 ]
 
 function asPercentOrNull(input: unknown): number | null {
@@ -60,7 +70,14 @@ function parseRepo(raw: unknown): CoverageRepoSnapshot | null {
   if (!raw || typeof raw !== 'object') return null
   const item = raw as Record<string, unknown>
   const key = item.key ?? item.repoKey
-  if (key !== 'tribus-storefront' && key !== 'tribus-ops' && key !== 'tribus-monitor') return null
+  if (
+    key !== 'tribus-storefront' &&
+    key !== 'tribus-ops' &&
+    key !== 'tribus-monitor' &&
+    key !== 'real-state'
+  ) {
+    return null
+  }
 
   return {
     key,
