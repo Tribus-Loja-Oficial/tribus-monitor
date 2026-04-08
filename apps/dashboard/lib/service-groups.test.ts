@@ -50,6 +50,6 @@ describe('groupServicesByDomain', () => {
     ])
     const other = groups.find((g) => g.key === 'other')
     expect(other?.services.length).toBe(2)
-    expect(other?.services[0].status).toBe('down')
+    expect(other?.services[0]?.status).toBe('down')
   })
 })

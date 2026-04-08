@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { ServiceState } from '@tribus-monitor/core'
 import { getGlobalPlatformStatus, getServiceStatusPriority } from './status'
 
-const base: Omit<ServiceState, 'serviceKey' | 'serviceName' | 'kind'> = {
+const base: Omit<ServiceState, 'serviceKey' | 'serviceName' | 'kind' | 'status'> = {
   niche: 'c',
   consecutiveFailures: 0,
   lastLatencyMs: 1,

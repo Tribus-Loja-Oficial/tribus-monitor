@@ -1,6 +1,7 @@
 node_modules
 dist
 .next
+*.tsbuildinfo
 coverage
 !apps/dashboard/components/coverage/
 !apps/dashboard/components/coverage/**
