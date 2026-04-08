@@ -83,4 +83,66 @@ describe('status rules', () => {
     expect(incident.serviceKey).toBe('k')
     expect(incident.resolvedAt).toBeNull()
   })
+
+  it('uses HTTP status in lastError when check fails without error string', () => {
+    const check: CheckResultInput = {
+      ...mkCheck(false),
+      error: null,
+      statusCode: 502,
+    }
+    const next = computeNextServiceState(null, check, '2026-01-01T10:00:00.000Z')
+    expect(next.lastError).toBe('HTTP 502')
+  })
+
+  it('uses HTTP 0 when failing check has no error and no status code', () => {
+    const check: CheckResultInput = {
+      ...mkCheck(false),
+      error: null,
+      statusCode: null,
+    }
+    const next = computeNextServiceState(null, check, '2026-01-01T10:00:00.000Z')
+    expect(next.lastError).toBe('HTTP 0')
+  })
+
+  it('preserves lastOkAt on consecutive failures', () => {
+    const first = computeNextServiceState(null, mkCheck(true), '2026-01-01T10:00:00.000Z')
+    const failed = computeNextServiceState(first, mkCheck(false), '2026-01-01T10:00:01.000Z')
+    expect(failed.lastOkAt).toBe('2026-01-01T10:00:00.000Z')
+  })
+
+  it('opens incident when previous state is null and next is down', () => {
+    const down: ServiceState = {
+      serviceKey: 'k',
+      serviceName: 'n',
+      kind: 'storefront-api',
+      niche: 'corrida',
+      status: 'down',
+      consecutiveFailures: 3,
+      lastLatencyMs: 1,
+      lastCheckAt: 'x',
+      lastOkAt: null,
+      lastError: 'e',
+      updatedAt: 'x',
+    }
+    expect(shouldOpenIncident(null, down)).toBe(true)
+  })
+
+  it('does not close incident without open incident', () => {
+    const prev: ServiceState = {
+      serviceKey: 'k',
+      serviceName: 'n',
+      kind: 'storefront-api',
+      niche: 'corrida',
+      status: 'down',
+      consecutiveFailures: 3,
+      lastLatencyMs: 1,
+      lastCheckAt: 'x',
+      lastOkAt: null,
+      lastError: 'e',
+      updatedAt: 'x',
+    }
+    const healthy = { ...prev, status: 'healthy' as const, consecutiveFailures: 0 }
+    expect(shouldCloseIncident(prev, healthy, false)).toBe(false)
+    expect(shouldCloseIncident(null, healthy, true)).toBe(false)
+  })
 })

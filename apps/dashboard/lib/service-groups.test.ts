@@ -30,4 +30,26 @@ describe('groupServicesByDomain', () => {
     expect(groups.find((g) => g.key === 'ops')?.services.length).toBe(1)
     expect(groups.find((g) => g.key === 'be')?.services.length).toBe(1)
   })
+
+  it('places unknown keys in other and sorts by status then key', () => {
+    const groups = groupServicesByDomain([
+      {
+        ...base,
+        serviceKey: 'custom-thing',
+        serviceName: 'x',
+        kind: 'storefront-api',
+        status: 'healthy',
+      },
+      {
+        ...base,
+        serviceKey: 'zzz-other',
+        serviceName: 'z',
+        kind: 'storefront-api',
+        status: 'down',
+      },
+    ])
+    const other = groups.find((g) => g.key === 'other')
+    expect(other?.services.length).toBe(2)
+    expect(other?.services[0].status).toBe('down')
+  })
 })

@@ -14,4 +14,14 @@ describe('buildTargets', () => {
     expect(targets.some((t) => t.serviceKey.includes('ops-health'))).toBe(true)
     expect(targets.some((t) => t.serviceKey.includes('be-catalog-products'))).toBe(true)
   })
+
+  it('duplicates targets for every niche', () => {
+    const targets = buildTargets({
+      storefrontBaseUrl: 'https://sf',
+      opsBaseUrl: 'https://ops',
+      beBaseUrl: 'https://be',
+      niches: ['a', 'b'],
+    })
+    expect(targets.length).toBe(12)
+  })
 })

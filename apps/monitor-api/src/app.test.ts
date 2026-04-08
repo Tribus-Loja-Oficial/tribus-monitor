@@ -147,4 +147,187 @@ describe('monitor-api', () => {
     })
     expect(post.status).toBe(201)
   })
+
+  it('exposes GET /health', async () => {
+    const app = createApp(env)
+    const res = await app.request('/health')
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.service).toBe('tribus-monitor-api')
+  })
+
+  it('rejects checks when Authorization is not Bearer', async () => {
+    const app = createApp(env)
+    const res = await app.request('/checks', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Token x',
+      },
+      body: JSON.stringify({ checks: [mkCheck(true, '2026-01-01T10:00:00.000Z')] }),
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('rejects checks with wrong bearer token', async () => {
+    const app = createApp(env)
+    const res = await app.request('/checks', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer wrong',
+      },
+      body: JSON.stringify({ checks: [mkCheck(true, '2026-01-01T10:00:00.000Z')] }),
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('returns 400 on invalid check ingest body', async () => {
+    const app = createApp(env)
+    const res = await app.request('/checks', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer secret-token',
+      },
+      body: JSON.stringify({ checks: [] }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('returns 404 for unknown service on GET /status/:serviceKey', async () => {
+    const app = createApp(env)
+    const res = await app.request('/status/does-not-exist')
+    expect(res.status).toBe(404)
+  })
+
+  it('sorts status with down before degraded before healthy', async () => {
+    const app = createApp(env)
+    const auth = { authorization: 'Bearer secret-token', 'content-type': 'application/json' }
+    await app.request('/checks', {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        checks: [mkCheck(true, '2026-01-01T10:00:00.000Z')],
+      }),
+    })
+    const bad = {
+      ...mkCheck(false, '2026-01-01T10:00:01.000Z'),
+      serviceKey: 'svc-b',
+      serviceName: 'B',
+    }
+    await app.request('/checks', {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ checks: [bad] }),
+    })
+    await app.request('/checks', {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ checks: [bad] }),
+    })
+    await app.request('/checks', {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ checks: [bad] }),
+    })
+
+    const res = await app.request('/status')
+    const body = await res.json()
+    expect(body.services[0].status).toBe('down')
+    expect(body.services[1].status).toBe('healthy')
+  })
+
+  it('filters history by serviceKey and respects limit', async () => {
+    const app = createApp(env)
+    const auth = { authorization: 'Bearer secret-token', 'content-type': 'application/json' }
+    await app.request('/checks', {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ checks: [mkCheck(true, '2026-01-01T10:00:00.000Z')] }),
+    })
+    const res = await app.request('/history?limit=1&serviceKey=storefront-health')
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.checks.length).toBeLessThanOrEqual(1)
+  })
+
+  it('lists services metadata on GET /services', async () => {
+    const app = createApp(env)
+    await app.request('/checks', {
+      method: 'POST',
+      headers: { authorization: 'Bearer secret-token', 'content-type': 'application/json' },
+      body: JSON.stringify({ checks: [mkCheck(true, '2026-01-01T10:00:00.000Z')] }),
+    })
+    const res = await app.request('/services')
+    const body = await res.json()
+    expect(body.services[0]).toMatchObject({
+      serviceKey: 'storefront-health',
+      niche: 'corrida',
+      kind: 'storefront-api',
+    })
+  })
+
+  it('returns 400 on invalid coverage payload', async () => {
+    const app = createApp(env)
+    const res = await app.request('/coverage', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer coverage-token',
+      },
+      body: JSON.stringify({
+        repoKey: 'unknown-repo',
+        repoName: 'X',
+        lines: 1,
+        functions: 1,
+        branches: 1,
+        statements: 1,
+      }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects coverage with invalid bearer token', async () => {
+    const app = createApp(env)
+    const res = await app.request('/coverage', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer not-coverage',
+      },
+      body: JSON.stringify({
+        repoKey: 'tribus-monitor',
+        repoName: 'T',
+        lines: 1,
+        functions: 1,
+        branches: 1,
+        statements: 1,
+      }),
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('ingests coverage with optional commitSha runUrl and updatedAt', async () => {
+    const app = createApp(env)
+    const res = await app.request('/coverage', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer coverage-token',
+      },
+      body: JSON.stringify({
+        repoKey: 'tribus-ops',
+        repoName: 'Ops',
+        lines: 88,
+        functions: 88,
+        branches: 88,
+        statements: 88,
+        commitSha: 'abc123',
+        runUrl: 'https://github.com/org/repo/actions/runs/1',
+        updatedAt: '2026-01-01T15:00:00.000Z',
+      }),
+    })
+    expect(res.status).toBe(201)
+  })
 })

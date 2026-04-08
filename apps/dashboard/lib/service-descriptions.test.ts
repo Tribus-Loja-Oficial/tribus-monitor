@@ -25,4 +25,33 @@ describe('getServiceDescription', () => {
     })
     expect(description).toContain('catalogo')
   })
+
+  it('describes storefront page checks', () => {
+    const d = getServiceDescription({
+      serviceKey: 'storefront-page-corrida',
+      serviceName: 'Page',
+    })
+    expect(d).toContain('pagina publica')
+  })
+
+  it('describes Mercado Pago health', () => {
+    const d = getServiceDescription({
+      serviceKey: 'storefront-health-mp-corrida',
+      serviceName: 'MP',
+    })
+    expect(d).toContain('Mercado Pago')
+  })
+
+  it('describes generic storefront health', () => {
+    const d = getServiceDescription({
+      serviceKey: 'storefront-health-corrida',
+      serviceName: 'Health',
+    })
+    expect(d).toContain('BFF')
+  })
+
+  it('falls back to generic description', () => {
+    const d = getServiceDescription({ serviceKey: 'unknown', serviceName: 'U' })
+    expect(d).toContain('U')
+  })
 })
