@@ -13,6 +13,32 @@ describe('normalizeCoverageSnapshot', () => {
     expect(out.repos.find((r) => r.key === 'tribus-monitor')).toBeDefined()
   })
 
+  it('drops non-object rows from array', () => {
+    const out = normalizeCoverageSnapshot([
+      null,
+      undefined,
+      1,
+      'x',
+      { key: 'tribus-ops', name: 'O' },
+    ])
+    expect(out.repos.find((r) => r.key === 'tribus-ops')?.name).toBe('O')
+  })
+
+  it('uses repoName when name is empty string', () => {
+    const out = normalizeCoverageSnapshot([
+      {
+        key: 'tribus-ops',
+        name: '',
+        repoName: 'From repoName',
+        lines: 1,
+        functions: 1,
+        branches: 1,
+        statements: 1,
+      },
+    ])
+    expect(out.repos.find((r) => r.key === 'tribus-ops')?.name).toBe('From repoName')
+  })
+
   it('merges known repos and keeps defaults for missing keys', () => {
     const out = normalizeCoverageSnapshot([
       {

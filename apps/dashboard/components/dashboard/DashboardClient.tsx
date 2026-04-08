@@ -86,7 +86,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
               Tribus Monitor
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-slate-600 md:text-base">
-              Visao executiva e operacional de disponibilidade, incidentes e qualidade de
+              Visão executiva e operacional de disponibilidade, incidentes e qualidade de
               engenharia.
             </p>
           </div>
@@ -103,14 +103,14 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
 
       <section className="grid gap-3 md:grid-cols-2">
         <MetricCard
-          label="Servicos monitorados"
+          label="Serviços monitorados"
           value={data.services.length}
           icon="🧩"
           active={activeTab === 'services'}
         />
         <MetricCard
           label={
-            coverageAverage === null ? 'Cobertura media indisponivel' : 'Cobertura media de testes'
+            coverageAverage === null ? 'Cobertura média indisponível' : 'Cobertura média de testes'
           }
           value={coverageAverage === null ? 0 : Math.round(coverageAverage)}
           icon="🧪"
@@ -129,7 +129,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
                 : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
             }`}
           >
-            Servicos
+            Serviços
           </button>
           <button
             type="button"
@@ -151,7 +151,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
                 : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
             }`}
           >
-            Validacoes de negocio
+            Validações de negócio
           </button>
         </nav>
 
@@ -159,9 +159,9 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
           {activeTab === 'services' ? (
             <section className="space-y-4">
               <header className="space-y-1">
-                <h2 className="text-sm font-semibold text-slate-900">Servicos</h2>
+                <h2 className="text-sm font-semibold text-slate-900">Serviços</h2>
                 <p className="text-xs text-slate-600">
-                  Monitoramento operacional por dominio da plataforma, com foco em leitura rapida e
+                  Monitoramento operacional por domínio da plataforma, com foco em leitura rápida e
                   sinais de gravidade.
                 </p>
               </header>
@@ -178,7 +178,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
                 <div className="space-y-4">
                   <SectionCard
                     title={`Incidentes ativos (${openIncidents.length})`}
-                    subtitle="Estado atual e historico recente de incidentes."
+                    subtitle="Estado atual e histórico recente de incidentes."
                   >
                     <div className="mb-3 inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
                       🚨 Incidentes ativos no momento: {openIncidents.length}
@@ -186,8 +186,8 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
                     <IncidentList incidents={data.incidents} />
                   </SectionCard>
                   <SectionCard
-                    title="Timeline de verificacoes"
-                    subtitle="Sequencia temporal dos checks mais recentes."
+                    title="Timeline de verificações"
+                    subtitle="Sequência temporal dos checks mais recentes."
                   >
                     <RecentEventsTimeline checks={data.checks} />
                   </SectionCard>
@@ -200,21 +200,21 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
                 <h2 className="text-sm font-semibold text-slate-900">Cobertura de testes</h2>
                 <p className="text-xs text-slate-600">
                   Indicadores de qualidade de engenharia publicados automaticamente pelos pipelines
-                  dos repositorios Tribus.
+                  dos repositórios Tribus.
                 </p>
               </header>
               <CoveragePanel coverage={data.coverage} />
             </section>
           ) : (
             <SectionCard
-              title="Validacoes de negocio"
-              subtitle="Modulo planejado para regras operacionais, sinais de negocio e consistencia de dados."
+              title="Validações de negócio"
+              subtitle="Módulo planejado para regras operacionais, sinais de negócio e consistência de dados."
             >
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-700">
-                <p className="font-medium text-slate-900">Em evolucao</p>
+                <p className="font-medium text-slate-900">Em evolução</p>
                 <p className="mt-1">
-                  Esta area sera dedicada a verificacoes de negocio (SLA de pedidos, saude de funis,
-                  integridade de catalogo e alertas de risco operacional).
+                  Esta área será dedicada a verificações de negócio (SLA de pedidos, saúde de funis,
+                  integridade de catálogo e alertas de risco operacional).
                 </p>
               </div>
             </SectionCard>

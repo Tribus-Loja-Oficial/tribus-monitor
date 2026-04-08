@@ -1,4 +1,5 @@
 import type { CoverageSnapshot } from '../../lib/coverage'
+import { formatTimeAgo } from '../../lib/time'
 import { SectionCard } from '../ui/SectionCard'
 
 interface CoveragePanelProps {
@@ -28,7 +29,7 @@ export function CoveragePanel({ coverage }: CoveragePanelProps) {
   return (
     <SectionCard
       title="Cobertura de testes"
-      subtitle="Linhas, funcoes, branches e statements dos repositorios monitorados."
+      subtitle="Linhas, funções, branches e statements dos repositórios monitorados."
     >
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {coverage.repos.map((repo) => (
@@ -100,13 +101,21 @@ export function CoveragePanel({ coverage }: CoveragePanelProps) {
 
             <p className="mt-3 text-xs text-slate-500">
               Atualizado:{' '}
-              {repo.updatedAt ? new Date(repo.updatedAt).toLocaleString('pt-BR') : 'N/A'}
+              {repo.updatedAt ? (
+                <>
+                  {new Date(repo.updatedAt).toLocaleString('pt-BR')}
+                  {' · '}
+                  <span className="whitespace-nowrap">{formatTimeAgo(repo.updatedAt)}</span>
+                </>
+              ) : (
+                'N/A'
+              )}
             </p>
           </article>
         ))}
       </div>
       <p className="mt-3 text-xs text-slate-500">
-        Dados publicados automaticamente pelos pipelines de CI dos repositorios Tribus.
+        Dados publicados automaticamente pelos pipelines de CI dos repositórios Tribus.
       </p>
     </SectionCard>
   )

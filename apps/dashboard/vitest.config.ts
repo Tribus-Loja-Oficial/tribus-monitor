@@ -8,13 +8,13 @@ export default defineConfig({
     include: ['**/*.test.tsx', '**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['lib/**/*.ts'],
+      include: ['lib/**/*.ts', 'components/coverage/**/*.tsx'],
       exclude: ['**/*.test.ts', '**/*.test.tsx'],
       thresholds: {
-        lines: 90,
-        functions: 90,
-        branches: 90,
-        statements: 90,
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100,
       },
     },
   },

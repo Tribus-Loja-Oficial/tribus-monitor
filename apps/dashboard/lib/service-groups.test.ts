@@ -52,4 +52,25 @@ describe('groupServicesByDomain', () => {
     expect(other?.services.length).toBe(2)
     expect(other?.services[0]?.status).toBe('down')
   })
+
+  it('sorts same-status services alphabetically by serviceKey', () => {
+    const groups = groupServicesByDomain([
+      {
+        ...base,
+        serviceKey: 'zebra',
+        serviceName: 'z',
+        kind: 'storefront-api',
+        status: 'healthy',
+      },
+      {
+        ...base,
+        serviceKey: 'alpha',
+        serviceName: 'a',
+        kind: 'storefront-api',
+        status: 'healthy',
+      },
+    ])
+    const other = groups.find((g) => g.key === 'other')
+    expect(other?.services.map((s) => s.serviceKey)).toEqual(['alpha', 'zebra'])
+  })
 })

@@ -43,7 +43,7 @@ export function DashboardUnavailable({ reason }: DashboardUnavailableProps) {
       <ModulesOverview />
 
       <section className="grid gap-3 md:grid-cols-3">
-        <MetricCard label="Servicos monitorados" value={0} />
+        <MetricCard label="Serviços monitorados" value={0} />
         <MetricCard label="Incidentes abertos" value={0} />
         <MetricCard label="Eventos recentes" value={0} />
       </section>

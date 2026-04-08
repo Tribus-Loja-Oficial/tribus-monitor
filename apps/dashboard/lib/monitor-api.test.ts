@@ -41,6 +41,40 @@ describe('fetchDashboardData', () => {
     )
   })
 
+  it('uses MONITOR_API_URL for fetch base when set', async () => {
+    vi.stubEnv('MONITOR_API_URL', 'https://monitor.example')
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ services: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ repos: [] }) })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await fetchDashboardData()
+
+    expect(fetchMock).toHaveBeenCalledWith('https://monitor.example/status', { cache: 'no-store' })
+  })
+
+  it('uses default localhost base when MONITOR_API_URL is unset', async () => {
+    const prev = process.env.MONITOR_API_URL
+    delete process.env.MONITOR_API_URL
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ services: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ repos: [] }) })
+    vi.stubGlobal('fetch', fetchMock)
+    try {
+      await fetchDashboardData()
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost:8787/status', { cache: 'no-store' })
+    } finally {
+      if (prev === undefined) delete process.env.MONITOR_API_URL
+      else process.env.MONITOR_API_URL = prev
+    }
+  })
+
   it('uses empty coverage when coverage response is not ok', async () => {
     vi.stubGlobal(
       'fetch',
