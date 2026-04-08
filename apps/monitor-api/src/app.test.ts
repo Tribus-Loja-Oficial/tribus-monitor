@@ -330,4 +330,41 @@ describe('monitor-api', () => {
     })
     expect(res.status).toBe(201)
   })
+
+  it('returns service state on GET /status/:serviceKey for existing key', async () => {
+    const app = createApp(env)
+    const auth = { authorization: 'Bearer secret-token', 'content-type': 'application/json' }
+    await app.request('/checks', {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ checks: [mkCheck(true, '2026-01-01T10:00:00.000Z')] }),
+    })
+    const res = await app.request('/status/storefront-health')
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.service.serviceKey).toBe('storefront-health')
+  })
+
+  it('sorts services with same status alphabetically by serviceKey', async () => {
+    const app = createApp(env)
+    const auth = { authorization: 'Bearer secret-token', 'content-type': 'application/json' }
+    const mkFail = (key: string) => ({
+      ...mkCheck(false, '2026-01-01T10:00:00.000Z'),
+      serviceKey: key,
+      serviceName: key,
+    })
+    // 2 consecutive failures → degraded; exercises getStatusPriority('degraded') tiebreak
+    for (let i = 0; i < 2; i++) {
+      await app.request('/checks', {
+        method: 'POST',
+        headers: auth,
+        body: JSON.stringify({ checks: [mkFail('aaa-service'), mkFail('zzz-service')] }),
+      })
+    }
+    const res = await app.request('/status')
+    const svcs: { serviceKey: string }[] = (await res.json()).services
+    const aIdx = svcs.findIndex((s) => s.serviceKey === 'aaa-service')
+    const zIdx = svcs.findIndex((s) => s.serviceKey === 'zzz-service')
+    expect(aIdx).toBeLessThan(zIdx)
+  })
 })

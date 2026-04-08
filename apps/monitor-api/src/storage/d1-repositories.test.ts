@@ -284,6 +284,38 @@ describe('createD1Repositories', () => {
     expect(cov[0]!.lines).toBe(90)
   })
 
+  it('covers null/false branches in D1 repository methods', async () => {
+    const db = createMemoryD1()
+    const repos = createD1Repositories(db)
+
+    // ok: false branch (row.ok ? 1 : 0)
+    await repos.checkResults.insertMany([
+      {
+        id: 'id-fail',
+        serviceKey: 'svc',
+        serviceName: 'S',
+        kind: 'storefront-api',
+        niche: 'corrida',
+        url: 'https://x',
+        statusCode: 500,
+        latencyMs: 1,
+        ok: false,
+        error: 'timeout',
+        checkedAt: '2026-01-01T10:00:00.000Z',
+        source: 'check-runner',
+        createdAt: '2026-01-01T10:00:00.000Z',
+      },
+    ])
+
+    // null branch for serviceStates.get with unknown key
+    const missing = await repos.serviceStates.get('nonexistent')
+    expect(missing).toBeNull()
+
+    // null branch for incidents.getOpenByService with no open incident
+    const noIncident = await repos.incidents.getOpenByService('nonexistent')
+    expect(noIncident).toBeNull()
+  })
+
   it('routes createRepositories to D1 when DB.prepare exists', () => {
     const repos = createRepositories({
       DB: createMemoryD1(),
