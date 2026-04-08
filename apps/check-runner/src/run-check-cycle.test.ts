@@ -55,4 +55,12 @@ describe('runCheckCycle', () => {
     expect(out.checks).toBe(1)
     expect(logs.some((l) => l.includes('runner_completed'))).toBe(true)
   })
+
+  it('uses default logFn (console.log) when none is passed', async () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const out = await runCheckCycle()
+    expect(out.checks).toBe(1)
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('runner_completed'))
+    spy.mockRestore()
+  })
 })
