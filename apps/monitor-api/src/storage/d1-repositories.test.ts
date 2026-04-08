@@ -228,7 +228,7 @@ describe('createD1Repositories', () => {
     await repos.checkResults.insertMany([row])
     const listed = await repos.checkResults.list(10)
     expect(listed).toHaveLength(1)
-    expect(listed[0].serviceKey).toBe('svc')
+    expect(listed[0]!.serviceKey).toBe('svc')
 
     const state: ServiceState = {
       serviceKey: 'svc',
@@ -266,7 +266,7 @@ describe('createD1Repositories', () => {
     expect(open?.id).toBe('inc-1')
     await repos.incidents.close('svc', '2026-01-01T11:00:00.000Z', 'ok')
     const incList = await repos.incidents.list(5)
-    expect(incList[0].resolvedAt).toBeTruthy()
+    expect(incList[0]!.resolvedAt).toBeTruthy()
 
     await repos.coverage.upsert({
       repoKey: 'tribus-monitor',
@@ -281,7 +281,7 @@ describe('createD1Repositories', () => {
     })
     const cov = await repos.coverage.list()
     expect(cov).toHaveLength(1)
-    expect(cov[0].lines).toBe(90)
+    expect(cov[0]!.lines).toBe(90)
   })
 
   it('routes createRepositories to D1 when DB.prepare exists', () => {

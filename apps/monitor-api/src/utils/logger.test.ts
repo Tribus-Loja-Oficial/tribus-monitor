@@ -10,7 +10,7 @@ describe('log', () => {
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
     log('info', 'hello', { x: 1 })
     expect(spy).toHaveBeenCalledTimes(1)
-    const arg = JSON.parse(spy.mock.calls[0][0] as string)
+    const arg = JSON.parse(spy.mock.calls[0]![0] as string)
     expect(arg.level).toBe('info')
     expect(arg.message).toBe('hello')
     expect(arg.x).toBe(1)
