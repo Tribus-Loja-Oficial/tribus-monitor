@@ -4,6 +4,7 @@ interface MetricCardProps {
   icon?: string
   tone?: 'default' | 'danger'
   active?: boolean
+  onClick?: () => void
 }
 
 export function MetricCard({
@@ -12,12 +13,25 @@ export function MetricCard({
   icon = '🧩',
   tone = 'default',
   active = false,
+  onClick,
 }: MetricCardProps) {
   const valueColor = tone === 'danger' ? 'text-rose-700' : 'text-slate-900'
   const labelColor = active ? 'text-slate-700' : 'text-slate-500'
   return (
     <article
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') onClick()
+            }
+          : undefined
+      }
       className={`rounded-2xl border p-4 transition ${
+        onClick ? 'cursor-pointer hover:shadow-md' : ''
+      } ${
         active
           ? 'border-blue-300/70 bg-gradient-to-br from-blue-50/70 via-slate-50 to-white ring-1 ring-blue-200/60 shadow-[0_6px_14px_rgba(30,64,175,0.08)]'
           : 'border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)]'

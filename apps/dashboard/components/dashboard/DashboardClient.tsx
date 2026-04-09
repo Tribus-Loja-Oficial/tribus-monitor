@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { CheckResult } from '@tribus-monitor/core'
 import type { DashboardData } from '../../lib/monitor-api'
 import { getGlobalPlatformStatus } from '../../lib/status'
@@ -27,9 +28,30 @@ function groupChecksByService(checks: CheckResult[]): Record<string, CheckResult
   return out
 }
 
+type TabId = 'services' | 'coverage' | 'business'
+
+function isValidTab(v: string | null): v is TabId {
+  return v === 'services' || v === 'coverage' || v === 'business'
+}
+
 export function DashboardClient({ initialData }: DashboardClientProps) {
   const [data, setData] = useState<DashboardData>(initialData)
-  const [activeTab, setActiveTab] = useState<'services' | 'coverage' | 'business'>('services')
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const initialTab = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState<TabId>(
+    isValidTab(initialTab) ? initialTab : 'services'
+  )
+
+  const switchTab = useCallback(
+    (tab: TabId) => {
+      setActiveTab(tab)
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('tab', tab)
+      router.replace(`?${params.toString()}`, { scroll: false })
+    },
+    [router, searchParams]
+  )
 
   useEffect(() => {
     const intervalId = setInterval(async () => {
@@ -107,6 +129,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
           value={data.services.length}
           icon="🧩"
           active={activeTab === 'services'}
+          onClick={() => switchTab('services')}
         />
         <MetricCard
           label={
@@ -115,6 +138,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
           value={coverageAverage === null ? 0 : Math.round(coverageAverage)}
           icon="🧪"
           active={activeTab === 'coverage'}
+          onClick={() => switchTab('coverage')}
         />
       </section>
 
@@ -122,7 +146,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
         <nav className="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50/80 p-2">
           <button
             type="button"
-            onClick={() => setActiveTab('services')}
+            onClick={() => switchTab('services')}
             className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
               activeTab === 'services'
                 ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
@@ -133,7 +157,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('coverage')}
+            onClick={() => switchTab('coverage')}
             className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
               activeTab === 'coverage'
                 ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
@@ -144,7 +168,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('business')}
+            onClick={() => switchTab('business')}
             className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
               activeTab === 'business'
                 ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
