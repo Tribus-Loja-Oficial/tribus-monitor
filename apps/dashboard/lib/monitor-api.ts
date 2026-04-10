@@ -26,37 +26,28 @@ function getMonitorApiBaseUrl() {
 }
 
 export async function fetchDashboardDataFromBase(baseUrl: string): Promise<DashboardData> {
-  const [statusRes, incidentsRes, historyRes, coverageRes, e2eRes] = await Promise.all([
-    fetch(`${baseUrl}/status`, { cache: 'no-store' }),
-    fetch(`${baseUrl}/incidents?limit=20`, { cache: 'no-store' }),
-    fetch(`${baseUrl}/history?limit=200`, { cache: 'no-store' }),
-    fetch(`${baseUrl}/coverage`, { cache: 'no-store' }),
-    fetch(`${baseUrl}/e2e-results?limit=10`, { cache: 'no-store' }),
-  ])
+  const res = await fetch(`${baseUrl}/dashboard`, { cache: 'no-store' })
+  if (!res.ok) throw new Error('Dashboard data request failed.')
 
-  if (!statusRes.ok || !incidentsRes.ok || !historyRes.ok) {
-    throw new Error('Dashboard data request failed.')
+  const body = (await res.json()) as {
+    data: {
+      services: ServiceState[]
+      incidents: Incident[]
+      checks: CheckResult[]
+      repos: unknown[]
+      e2eRuns: E2ERun[]
+      e2eLatestResults: E2EScenarioResult[]
+    }
   }
-
-  const [statusBody, incidentsBody, historyBody] = await Promise.all([
-    statusRes.json() as Promise<{ services: ServiceState[] }>,
-    incidentsRes.json() as Promise<{ incidents: Incident[] }>,
-    historyRes.json() as Promise<{ checks: CheckResult[] }>,
-  ])
-  const coverageBody = coverageRes.ok
-    ? ((await coverageRes.json()) as { repos?: unknown[] })
-    : { repos: [] as unknown[] }
-  const e2eBody = e2eRes.ok
-    ? ((await e2eRes.json()) as { runs: E2ERun[]; latestResults: E2EScenarioResult[] })
-    : { runs: [], latestResults: [] }
+  const d = body.data
 
   return {
-    services: statusBody.services,
-    incidents: incidentsBody.incidents,
-    historyCount: historyBody.checks.length,
-    checks: historyBody.checks,
-    coverage: normalizeCoverageSnapshot(coverageBody.repos),
-    e2e: { runs: e2eBody.runs, latestResults: e2eBody.latestResults },
+    services: d.services,
+    incidents: d.incidents,
+    historyCount: d.checks.length,
+    checks: d.checks,
+    coverage: normalizeCoverageSnapshot(d.repos),
+    e2e: { runs: d.e2eRuns, latestResults: d.e2eLatestResults },
   }
 }
 

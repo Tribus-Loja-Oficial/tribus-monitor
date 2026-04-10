@@ -67,7 +67,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
   useEffect(() => {
     const intervalId = setInterval(() => {
       void refreshDashboard()
-    }, 15000)
+    }, 60_000)
     return () => clearInterval(intervalId)
   }, [refreshDashboard])
 

@@ -203,6 +203,37 @@ export function createApp(bindings?: MonitorEnv) {
     return ok(c, { runs, latestResults: results })
   })
 
+  // ---------- Dashboard aggregate ----------
+
+  app.get('/dashboard', async (c) => {
+    const repo = c.get('repositories')
+    const [services, incidents, checks, coverageRepos, e2eRuns] = await Promise.all([
+      repo.serviceStates.list(),
+      repo.incidents.list(20),
+      repo.checkResults.list(200),
+      repo.coverage.list(),
+      repo.e2e.listRuns(10),
+    ])
+
+    const ordered = [...services].sort((a, b) => {
+      const p = getStatusPriority(a.status) - getStatusPriority(b.status)
+      if (p !== 0) return p
+      return a.serviceKey.localeCompare(b.serviceKey)
+    })
+
+    const latestRun = e2eRuns[0]
+    const latestResults = latestRun ? await repo.e2e.listResultsByRun(latestRun.id) : []
+
+    return ok(c, {
+      services: ordered,
+      incidents,
+      checks,
+      repos: coverageRepos,
+      e2eRuns,
+      e2eLatestResults: latestResults,
+    })
+  })
+
   app.delete('/e2e-results/:runId', e2eAuth, async (c) => {
     const runId = z.string().uuid().parse(c.req.param('runId'))
     await c.get('repositories').e2e.deleteRun(runId)
