@@ -30,24 +30,21 @@ export async function fetchDashboardDataFromBase(baseUrl: string): Promise<Dashb
   if (!res.ok) throw new Error('Dashboard data request failed.')
 
   const body = (await res.json()) as {
-    data: {
-      services: ServiceState[]
-      incidents: Incident[]
-      checks: CheckResult[]
-      repos: unknown[]
-      e2eRuns: E2ERun[]
-      e2eLatestResults: E2EScenarioResult[]
-    }
+    services: ServiceState[]
+    incidents: Incident[]
+    checks: CheckResult[]
+    repos: unknown[]
+    e2eRuns: E2ERun[]
+    e2eLatestResults: E2EScenarioResult[]
   }
-  const d = body.data
 
   return {
-    services: d.services,
-    incidents: d.incidents,
-    historyCount: d.checks.length,
-    checks: d.checks,
-    coverage: normalizeCoverageSnapshot(d.repos),
-    e2e: { runs: d.e2eRuns, latestResults: d.e2eLatestResults },
+    services: body.services,
+    incidents: body.incidents,
+    historyCount: body.checks.length,
+    checks: body.checks,
+    coverage: normalizeCoverageSnapshot(body.repos),
+    e2e: { runs: body.e2eRuns, latestResults: body.e2eLatestResults },
   }
 }
 

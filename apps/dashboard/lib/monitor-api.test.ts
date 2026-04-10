@@ -10,8 +10,8 @@ const dashboardPayload = {
   e2eLatestResults: [],
 }
 
-function okResponse(data: unknown) {
-  return { ok: true, json: async () => ({ ok: true, data }) }
+function okResponse(data: object) {
+  return { ok: true, json: async () => ({ success: true, ...data }) }
 }
 
 describe('fetchDashboardData', () => {
