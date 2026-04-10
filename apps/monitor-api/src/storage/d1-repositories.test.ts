@@ -64,6 +64,37 @@ function createMemoryD1() {
     }
   >()
 
+  const e2eRunRows: {
+    id: string
+    source: string
+    runner: string
+    environment: string
+    emitted_at: string
+    total: number
+    passed: number
+    failed: number
+    skipped: number
+    pass_rate: number
+    created_at: string
+  }[] = []
+
+  const e2eResultRows: {
+    id: string
+    run_id: string
+    suite_id: string
+    scenario_id: string
+    scenario_name: string
+    niche: string
+    environment: string
+    status: string
+    criticality: string
+    failure_type: string | null
+    error_message: string | null
+    duration_ms: number
+    started_at: string
+    finished_at: string
+  }[] = []
+
   function prepare(sql: string) {
     const q = sql.replace(/\s+/g, ' ').trim()
 
@@ -146,6 +177,39 @@ function createMemoryD1() {
             updated_at: args[8] as string,
           })
         }
+        if (q.includes('INSERT INTO e2e_runs')) {
+          e2eRunRows.push({
+            id: args[0] as string,
+            source: args[1] as string,
+            runner: args[2] as string,
+            environment: args[3] as string,
+            emitted_at: args[4] as string,
+            total: args[5] as number,
+            passed: args[6] as number,
+            failed: args[7] as number,
+            skipped: args[8] as number,
+            pass_rate: args[9] as number,
+            created_at: args[10] as string,
+          })
+        }
+        if (q.includes('INSERT INTO e2e_results')) {
+          e2eResultRows.push({
+            id: args[0] as string,
+            run_id: args[1] as string,
+            suite_id: args[2] as string,
+            scenario_id: args[3] as string,
+            scenario_name: args[4] as string,
+            niche: args[5] as string,
+            environment: args[6] as string,
+            status: args[7] as string,
+            criticality: args[8] as string,
+            failure_type: args[9] as string | null,
+            error_message: args[10] as string | null,
+            duration_ms: args[11] as number,
+            started_at: args[12] as string,
+            finished_at: args[13] as string,
+          })
+        }
       },
       async first<T>(): Promise<T | null> {
         if (q.includes('FROM service_states') && q.includes('WHERE service_key')) {
@@ -183,6 +247,18 @@ function createMemoryD1() {
             a.repo_key.localeCompare(b.repo_key)
           )
           return { results: sorted as T[] }
+        }
+        if (q.includes('FROM e2e_runs')) {
+          const limit = args[0] as number
+          const sorted = [...e2eRunRows].sort((a, b) => b.emitted_at.localeCompare(a.emitted_at))
+          return { results: sorted.slice(0, limit) as T[] }
+        }
+        if (q.includes('FROM e2e_results') && q.includes('run_id')) {
+          const runId = args[0] as string
+          const filtered = e2eResultRows
+            .filter((r) => r.run_id === runId)
+            .sort((a, b) => a.started_at.localeCompare(b.started_at))
+          return { results: filtered as T[] }
         }
         return { results: [] }
       },
@@ -323,5 +399,73 @@ describe('createD1Repositories', () => {
       MONITOR_COVERAGE_TOKEN: 'b',
     })
     expect(repos.coverage).toBeDefined()
+  })
+
+  it('stores and retrieves E2E runs and results via D1 mock', async () => {
+    const db = createMemoryD1()
+    const repos = createD1Repositories(db)
+
+    const run = {
+      id: 'run-d1-1',
+      source: 'tribus-e2e',
+      runner: 'github-actions',
+      environment: 'production',
+      emittedAt: '2026-01-01T10:00:00.000Z',
+      total: 2,
+      passed: 1,
+      failed: 1,
+      skipped: 0,
+      passRate: 50,
+      createdAt: '2026-01-01T10:00:01.000Z',
+    }
+    const scenarioResults = [
+      {
+        id: 'res-d1-1',
+        runId: 'run-d1-1',
+        suiteId: 'storefront-smoke',
+        scenarioId: 'J05-login-valid',
+        scenarioName: 'Login valido',
+        niche: 'corrida',
+        environment: 'production',
+        status: 'passed' as const,
+        criticality: 'P0',
+        failureType: null,
+        errorMessage: null,
+        durationMs: 3200,
+        startedAt: '2026-01-01T10:00:00.000Z',
+        finishedAt: '2026-01-01T10:00:03.200Z',
+      },
+      {
+        id: 'res-d1-2',
+        runId: 'run-d1-1',
+        suiteId: 'storefront-smoke',
+        scenarioId: 'J06-login-invalid',
+        scenarioName: 'Login invalido',
+        niche: 'corrida',
+        environment: 'production',
+        status: 'failed' as const,
+        criticality: 'P1',
+        failureType: 'functional',
+        errorMessage: 'Expected error banner',
+        durationMs: 8000,
+        startedAt: '2026-01-01T10:00:04.000Z',
+        finishedAt: '2026-01-01T10:00:12.000Z',
+      },
+    ]
+
+    await repos.e2e.insertRun(run, scenarioResults)
+
+    const runs = await repos.e2e.listRuns(10)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]!.id).toBe('run-d1-1')
+    expect(runs[0]!.passRate).toBe(50)
+
+    const results = await repos.e2e.listResultsByRun('run-d1-1')
+    expect(results).toHaveLength(2)
+    expect(results[0]!.scenarioId).toBe('J05-login-valid')
+    expect(results[1]!.errorMessage).toBe('Expected error banner')
+
+    const empty = await repos.e2e.listResultsByRun('nonexistent')
+    expect(empty).toHaveLength(0)
   })
 })

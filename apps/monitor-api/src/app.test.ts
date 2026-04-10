@@ -437,6 +437,33 @@ describe('monitor-api', () => {
     expect(listBody.latestResults).toHaveLength(2)
   })
 
+  it('returns empty latestResults when no E2E runs exist', async () => {
+    const app = createApp(env)
+    const res = await app.request('/e2e-results')
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.runs).toHaveLength(0)
+    expect(body.latestResults).toHaveLength(0)
+  })
+
+  it('handles E2E payload with empty results array (passRate=0)', async () => {
+    const app = createApp(env)
+    const res = await app.request('/e2e-results', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer e2e-token' },
+      body: JSON.stringify({
+        source: 'tribus-e2e',
+        runner: 'github-actions',
+        checkType: 'functional_e2e',
+        emittedAt: '2026-01-01T10:00:00.000Z',
+        results: [],
+      }),
+    })
+    expect(res.status).toBe(201)
+    const body = await res.json()
+    expect(body.saved).toBe(true)
+  })
+
   it('sorts services with same status alphabetically by serviceKey', async () => {
     const app = createApp(env)
     const auth = { authorization: 'Bearer secret-token', 'content-type': 'application/json' }

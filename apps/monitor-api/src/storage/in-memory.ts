@@ -7,14 +7,14 @@ import type {
 } from '@tribus-monitor/core'
 import type { CoverageSnapshot, StorageRepositories } from '../types'
 
-const checkResults = new Map<string, CheckResult>()
-const serviceStates = new Map<string, ServiceState>()
-const incidents = new Map<string, Incident>()
-const coverage = new Map<string, CoverageSnapshot>()
-const e2eRuns = new Map<string, E2ERun>()
-const e2eResults = new Map<string, E2EScenarioResult>()
-
 export function createInMemoryRepositories(): StorageRepositories {
+  const checkResults = new Map<string, CheckResult>()
+  const serviceStates = new Map<string, ServiceState>()
+  const incidents = new Map<string, Incident>()
+  const coverage = new Map<string, CoverageSnapshot>()
+  const e2eRuns = new Map<string, E2ERun>()
+  const e2eResults = new Map<string, E2EScenarioResult>()
+
   return {
     checkResults: {
       async insertMany(rows) {
