@@ -14,6 +14,7 @@ import { SectionCard } from '../ui/SectionCard'
 import { IncidentList } from '../incidents/IncidentList'
 import { RecentEventsTimeline } from '../incidents/RecentEventsTimeline'
 import { CoveragePanel } from '../coverage/CoveragePanel'
+import { E2EPanel } from '../e2e/E2EPanel'
 
 interface DashboardClientProps {
   initialData: DashboardData
@@ -28,10 +29,10 @@ function groupChecksByService(checks: CheckResult[]): Record<string, CheckResult
   return out
 }
 
-type TabId = 'services' | 'coverage' | 'business'
+type TabId = 'services' | 'coverage' | 'e2e' | 'business'
 
 function isValidTab(v: string | null): v is TabId {
-  return v === 'services' || v === 'coverage' || v === 'business'
+  return v === 'services' || v === 'coverage' || v === 'e2e' || v === 'business'
 }
 
 export function DashboardClient({ initialData }: DashboardClientProps) {
@@ -123,7 +124,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
         </div>
       </header>
 
-      <section className="grid gap-3 md:grid-cols-2">
+      <section className="grid gap-3 md:grid-cols-3">
         <MetricCard
           label="Serviços monitorados"
           value={data.services.length}
@@ -140,6 +141,23 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
           active={activeTab === 'coverage'}
           onClick={() => switchTab('coverage')}
         />
+        {(() => {
+          const latestRun = data.e2e.runs[0]
+          return (
+            <MetricCard
+              label={
+                !latestRun
+                  ? 'E2E — sem dados'
+                  : `E2E — ${latestRun.passed}/${latestRun.total} passaram`
+              }
+              value={latestRun ? Math.round(latestRun.passRate) : 0}
+              icon="🤖"
+              tone={latestRun && latestRun.passRate < 80 ? 'danger' : 'default'}
+              active={activeTab === 'e2e'}
+              onClick={() => switchTab('e2e')}
+            />
+          )
+        })()}
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
@@ -165,6 +183,17 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
             }`}
           >
             Cobertura de testes
+          </button>
+          <button
+            type="button"
+            onClick={() => switchTab('e2e')}
+            className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
+              activeTab === 'e2e'
+                ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
+                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
+            }`}
+          >
+            E2E
           </button>
           <button
             type="button"
@@ -228,6 +257,17 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
                 </p>
               </header>
               <CoveragePanel coverage={data.coverage} />
+            </section>
+          ) : activeTab === 'e2e' ? (
+            <section className="space-y-4">
+              <header className="space-y-1">
+                <h2 className="text-sm font-semibold text-slate-900">Testes E2E</h2>
+                <p className="text-xs text-slate-600">
+                  Resultados dos testes funcionais end-to-end publicados automaticamente pelo
+                  pipeline do tribus-e2e.
+                </p>
+              </header>
+              <E2EPanel e2e={data.e2e} />
             </section>
           ) : (
             <SectionCard

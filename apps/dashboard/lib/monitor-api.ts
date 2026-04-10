@@ -1,5 +1,16 @@
-import type { CheckResult, Incident, ServiceState } from '@tribus-monitor/core'
+import type {
+  CheckResult,
+  E2ERun,
+  E2EScenarioResult,
+  Incident,
+  ServiceState,
+} from '@tribus-monitor/core'
 import { normalizeCoverageSnapshot, type CoverageSnapshot } from './coverage'
+
+export interface E2EData {
+  runs: E2ERun[]
+  latestResults: E2EScenarioResult[]
+}
 
 export interface DashboardData {
   services: ServiceState[]
@@ -7,6 +18,7 @@ export interface DashboardData {
   historyCount: number
   checks: CheckResult[]
   coverage: CoverageSnapshot
+  e2e: E2EData
 }
 
 function getMonitorApiBaseUrl() {
@@ -14,11 +26,12 @@ function getMonitorApiBaseUrl() {
 }
 
 export async function fetchDashboardDataFromBase(baseUrl: string): Promise<DashboardData> {
-  const [statusRes, incidentsRes, historyRes, coverageRes] = await Promise.all([
+  const [statusRes, incidentsRes, historyRes, coverageRes, e2eRes] = await Promise.all([
     fetch(`${baseUrl}/status`, { cache: 'no-store' }),
     fetch(`${baseUrl}/incidents?limit=20`, { cache: 'no-store' }),
     fetch(`${baseUrl}/history?limit=200`, { cache: 'no-store' }),
     fetch(`${baseUrl}/coverage`, { cache: 'no-store' }),
+    fetch(`${baseUrl}/e2e-results?limit=10`, { cache: 'no-store' }),
   ])
 
   if (!statusRes.ok || !incidentsRes.ok || !historyRes.ok) {
@@ -33,6 +46,9 @@ export async function fetchDashboardDataFromBase(baseUrl: string): Promise<Dashb
   const coverageBody = coverageRes.ok
     ? ((await coverageRes.json()) as { repos?: unknown[] })
     : { repos: [] as unknown[] }
+  const e2eBody = e2eRes.ok
+    ? ((await e2eRes.json()) as { runs: E2ERun[]; latestResults: E2EScenarioResult[] })
+    : { runs: [], latestResults: [] }
 
   return {
     services: statusBody.services,
@@ -40,6 +56,7 @@ export async function fetchDashboardDataFromBase(baseUrl: string): Promise<Dashb
     historyCount: historyBody.checks.length,
     checks: historyBody.checks,
     coverage: normalizeCoverageSnapshot(coverageBody.repos),
+    e2e: { runs: e2eBody.runs, latestResults: e2eBody.latestResults },
   }
 }
 

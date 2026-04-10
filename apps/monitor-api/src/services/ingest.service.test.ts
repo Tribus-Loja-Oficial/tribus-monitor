@@ -38,6 +38,11 @@ function mkRepos(): StorageRepositories {
       upsert: vi.fn(async () => {}),
       list: vi.fn(async () => []),
     },
+    e2e: {
+      insertRun: vi.fn(async () => {}),
+      listRuns: vi.fn(async () => []),
+      listResultsByRun: vi.fn(async () => []),
+    },
   }
 }
 

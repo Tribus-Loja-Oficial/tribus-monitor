@@ -45,6 +45,38 @@ export interface ServiceState {
   updatedAt: string
 }
 
+export type E2EScenarioStatus = 'passed' | 'failed' | 'skipped' | 'timedout'
+
+export interface E2ERun {
+  id: string
+  source: string
+  runner: string
+  environment: string
+  emittedAt: string
+  total: number
+  passed: number
+  failed: number
+  skipped: number
+  passRate: number
+  createdAt: string
+}
+
+export interface E2EScenarioResult {
+  id: string
+  runId: string
+  suiteId: string
+  scenarioId: string
+  scenarioName: string
+  niche: string
+  environment: string
+  status: E2EScenarioStatus
+  criticality: string
+  failureType: string | null
+  durationMs: number
+  startedAt: string
+  finishedAt: string
+}
+
 export interface Incident {
   id: string
   serviceKey: string

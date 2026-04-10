@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fetchDashboardData, fetchDashboardDataFromBase } from './monitor-api'
 
+const e2eOk = { ok: true, json: async () => ({ runs: [], latestResults: [] }) }
+
 describe('fetchDashboardData', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -16,6 +18,7 @@ describe('fetchDashboardData', () => {
         .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
         .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
         .mockResolvedValueOnce({ ok: true, json: async () => ({ repos: [] }) })
+        .mockResolvedValueOnce(e2eOk)
     )
 
     const data = await fetchDashboardData()
@@ -24,6 +27,7 @@ describe('fetchDashboardData', () => {
     expect(data.historyCount).toBe(0)
     expect(data.checks).toHaveLength(0)
     expect(data.coverage.repos).toHaveLength(4)
+    expect(data.e2e.runs).toHaveLength(0)
   })
 
   it('throws when a core request fails', async () => {
@@ -35,6 +39,7 @@ describe('fetchDashboardData', () => {
         .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
         .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
         .mockResolvedValueOnce({ ok: true, json: async () => ({ repos: [] }) })
+        .mockResolvedValueOnce(e2eOk)
     )
     await expect(fetchDashboardDataFromBase('https://api.example')).rejects.toThrow(
       /Dashboard data request failed/
@@ -49,6 +54,7 @@ describe('fetchDashboardData', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ repos: [] }) })
+      .mockResolvedValueOnce(e2eOk)
     vi.stubGlobal('fetch', fetchMock)
 
     await fetchDashboardData()
@@ -65,6 +71,7 @@ describe('fetchDashboardData', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ repos: [] }) })
+      .mockResolvedValueOnce(e2eOk)
     vi.stubGlobal('fetch', fetchMock)
     try {
       await fetchDashboardData()
@@ -84,8 +91,10 @@ describe('fetchDashboardData', () => {
         .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
         .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
         .mockResolvedValueOnce({ ok: false, json: async () => ({}) })
+        .mockResolvedValueOnce(e2eOk)
     )
     const data = await fetchDashboardDataFromBase('https://api.example')
     expect(data.coverage.repos).toEqual(expect.any(Array))
+    expect(data.e2e.runs).toHaveLength(0)
   })
 })

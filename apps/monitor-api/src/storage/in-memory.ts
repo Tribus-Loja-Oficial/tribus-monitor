@@ -1,10 +1,18 @@
-import type { CheckResult, Incident, ServiceState } from '@tribus-monitor/core'
+import type {
+  CheckResult,
+  E2ERun,
+  E2EScenarioResult,
+  Incident,
+  ServiceState,
+} from '@tribus-monitor/core'
 import type { CoverageSnapshot, StorageRepositories } from '../types'
 
 const checkResults = new Map<string, CheckResult>()
 const serviceStates = new Map<string, ServiceState>()
 const incidents = new Map<string, Incident>()
 const coverage = new Map<string, CoverageSnapshot>()
+const e2eRuns = new Map<string, E2ERun>()
+const e2eResults = new Map<string, E2EScenarioResult>()
 
 export function createInMemoryRepositories(): StorageRepositories {
   return {
@@ -65,6 +73,22 @@ export function createInMemoryRepositories(): StorageRepositories {
       },
       async list() {
         return Array.from(coverage.values()).sort((a, b) => a.repoKey.localeCompare(b.repoKey))
+      },
+    },
+    e2e: {
+      async insertRun(run, results) {
+        e2eRuns.set(run.id, run)
+        for (const r of results) e2eResults.set(r.id, r)
+      },
+      async listRuns(limit = 30) {
+        return Array.from(e2eRuns.values())
+          .sort((a, b) => b.emittedAt.localeCompare(a.emittedAt))
+          .slice(0, limit)
+      },
+      async listResultsByRun(runId) {
+        return Array.from(e2eResults.values())
+          .filter((r) => r.runId === runId)
+          .sort((a, b) => a.startedAt.localeCompare(b.startedAt))
       },
     },
   }

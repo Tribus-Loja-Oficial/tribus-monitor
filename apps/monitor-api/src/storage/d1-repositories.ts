@@ -1,4 +1,10 @@
-import type { CheckResult, Incident, ServiceState } from '@tribus-monitor/core'
+import type {
+  CheckResult,
+  E2ERun,
+  E2EScenarioResult,
+  Incident,
+  ServiceState,
+} from '@tribus-monitor/core'
 import type { CoverageSnapshot, StorageRepositories } from '../types'
 import { createInMemoryRepositories } from './in-memory'
 
@@ -66,6 +72,70 @@ type CoverageRow = {
   commit_sha: string | null
   run_url: string | null
   updated_at: string
+}
+
+type E2ERunRow = {
+  id: string
+  source: string
+  runner: string
+  environment: string
+  emitted_at: string
+  total: number
+  passed: number
+  failed: number
+  skipped: number
+  pass_rate: number
+  created_at: string
+}
+
+type E2EResultRow = {
+  id: string
+  run_id: string
+  suite_id: string
+  scenario_id: string
+  scenario_name: string
+  niche: string
+  environment: string
+  status: string
+  criticality: string
+  failure_type: string | null
+  duration_ms: number
+  started_at: string
+  finished_at: string
+}
+
+function mapE2ERun(row: E2ERunRow): E2ERun {
+  return {
+    id: row.id,
+    source: row.source,
+    runner: row.runner,
+    environment: row.environment,
+    emittedAt: row.emitted_at,
+    total: row.total,
+    passed: row.passed,
+    failed: row.failed,
+    skipped: row.skipped,
+    passRate: row.pass_rate,
+    createdAt: row.created_at,
+  }
+}
+
+function mapE2EResult(row: E2EResultRow): E2EScenarioResult {
+  return {
+    id: row.id,
+    runId: row.run_id,
+    suiteId: row.suite_id,
+    scenarioId: row.scenario_id,
+    scenarioName: row.scenario_name,
+    niche: row.niche,
+    environment: row.environment,
+    status: row.status as E2EScenarioResult['status'],
+    criticality: row.criticality,
+    failureType: row.failure_type,
+    durationMs: row.duration_ms,
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
+  }
 }
 
 function asD1Database(binding: unknown): D1DatabaseLike | null {
@@ -376,6 +446,66 @@ export function createD1Repositories(dbBinding: unknown): StorageRepositories {
           .all<CoverageRow>()
 
         return result.results.map(mapCoverage)
+      },
+    },
+    e2e: {
+      async insertRun(run, results) {
+        await db
+          .prepare(
+            `INSERT INTO e2e_runs (id, source, runner, environment, emitted_at, total, passed, failed, skipped, pass_rate, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          )
+          .bind(
+            run.id,
+            run.source,
+            run.runner,
+            run.environment,
+            run.emittedAt,
+            run.total,
+            run.passed,
+            run.failed,
+            run.skipped,
+            run.passRate,
+            run.createdAt
+          )
+          .run()
+        for (const r of results) {
+          await db
+            .prepare(
+              `INSERT INTO e2e_results (id, run_id, suite_id, scenario_id, scenario_name, niche, environment, status, criticality, failure_type, duration_ms, started_at, finished_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            )
+            .bind(
+              r.id,
+              r.runId,
+              r.suiteId,
+              r.scenarioId,
+              r.scenarioName,
+              r.niche,
+              r.environment,
+              r.status,
+              r.criticality,
+              r.failureType,
+              r.durationMs,
+              r.startedAt,
+              r.finishedAt
+            )
+            .run()
+        }
+      },
+      async listRuns(limit = 30) {
+        const result = await db
+          .prepare(`SELECT * FROM e2e_runs ORDER BY emitted_at DESC LIMIT ?`)
+          .bind(limit)
+          .all<E2ERunRow>()
+        return result.results.map(mapE2ERun)
+      },
+      async listResultsByRun(runId) {
+        const result = await db
+          .prepare(`SELECT * FROM e2e_results WHERE run_id = ? ORDER BY started_at ASC`)
+          .bind(runId)
+          .all<E2EResultRow>()
+        return result.results.map(mapE2EResult)
       },
     },
   }

@@ -1,4 +1,10 @@
-import type { CheckResult, Incident, ServiceState } from '@tribus-monitor/core'
+import type {
+  CheckResult,
+  E2ERun,
+  E2EScenarioResult,
+  Incident,
+  ServiceState,
+} from '@tribus-monitor/core'
 
 export type CoverageRepoKey = 'tribus-storefront' | 'tribus-ops' | 'tribus-monitor' | 'real-state'
 
@@ -34,11 +40,17 @@ export interface StorageRepositories {
     upsert(snapshot: CoverageSnapshot): Promise<void>
     list(): Promise<CoverageSnapshot[]>
   }
+  e2e: {
+    insertRun(run: E2ERun, results: E2EScenarioResult[]): Promise<void>
+    listRuns(limit?: number): Promise<E2ERun[]>
+    listResultsByRun(runId: string): Promise<E2EScenarioResult[]>
+  }
 }
 
 export interface MonitorEnv {
   MONITOR_CHECKS_TOKEN?: string
   MONITOR_COVERAGE_TOKEN?: string
+  MONITOR_E2E_TOKEN?: string
   DB?: unknown
   SERVICES_KV?: unknown
 }

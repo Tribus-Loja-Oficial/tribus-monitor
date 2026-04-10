@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { checkIngestSchema, type ServiceState } from '@tribus-monitor/core'
 import { z } from 'zod'
 import { getEnv } from './config/env'
-import { checksAuth, coverageAuth } from './middleware/auth'
+import { checksAuth, coverageAuth, e2eAuth } from './middleware/auth'
 import { errorHandler } from './middleware/error-handler'
 import { ingestChecks } from './services/ingest.service'
 import { createRepositories } from './storage'
@@ -115,6 +115,90 @@ export function createApp(bindings?: MonitorEnv) {
     const rows = await c.get('repositories').checkResults.list(limit)
     const filtered = serviceKey ? rows.filter((row) => row.serviceKey === serviceKey) : rows
     return ok(c, { checks: filtered })
+  })
+
+  // ---------- E2E Results ----------
+
+  const e2ePayloadSchema = z.object({
+    source: z.string().min(1),
+    runner: z.string().min(1),
+    checkType: z.literal('functional_e2e'),
+    emittedAt: z.string().datetime(),
+    results: z.array(
+      z.object({
+        suiteId: z.string(),
+        scenarioId: z.string(),
+        scenarioName: z.string(),
+        niche: z.string(),
+        environment: z.string(),
+        status: z.enum(['passed', 'failed', 'skipped', 'timedout']),
+        criticality: z.string(),
+        failureType: z.string().optional(),
+        durationMs: z.number(),
+        startedAt: z.string(),
+        finishedAt: z.string(),
+      })
+    ),
+  })
+
+  app.post('/e2e-results', e2eAuth, async (c) => {
+    const body = await c.req.json()
+    const payload = e2ePayloadSchema.parse(body)
+
+    const runId = crypto.randomUUID()
+    const now = new Date().toISOString()
+    const total = payload.results.length
+    const passed = payload.results.filter((r) => r.status === 'passed').length
+    const failed = payload.results.filter(
+      (r) => r.status === 'failed' || r.status === 'timedout'
+    ).length
+    const skipped = payload.results.filter((r) => r.status === 'skipped').length
+    const passRate = total > 0 ? Math.round((passed / total) * 10000) / 100 : 0
+
+    // Deduce environment from results (all results share same environment)
+    const environment = payload.results[0]?.environment ?? 'unknown'
+
+    const run = {
+      id: runId,
+      source: payload.source,
+      runner: payload.runner,
+      environment,
+      emittedAt: payload.emittedAt,
+      total,
+      passed,
+      failed,
+      skipped,
+      passRate,
+      createdAt: now,
+    }
+
+    const scenarioResults = payload.results.map((r, i) => ({
+      id: `${runId}-${i}`,
+      runId,
+      suiteId: r.suiteId,
+      scenarioId: r.scenarioId,
+      scenarioName: r.scenarioName,
+      niche: r.niche,
+      environment: r.environment,
+      status: r.status,
+      criticality: r.criticality,
+      failureType: r.failureType ?? null,
+      durationMs: r.durationMs,
+      startedAt: r.startedAt,
+      finishedAt: r.finishedAt,
+    }))
+
+    await c.get('repositories').e2e.insertRun(run, scenarioResults)
+    return ok(c, { runId, saved: true }, 201)
+  })
+
+  app.get('/e2e-results', async (c) => {
+    const limit = z.coerce.number().int().positive().max(100).optional().parse(c.req.query('limit'))
+    const runs = await c.get('repositories').e2e.listRuns(limit)
+    // Attach scenario results to the latest run for dashboard detail
+    const latest = runs[0]
+    const results = latest ? await c.get('repositories').e2e.listResultsByRun(latest.id) : []
+    return ok(c, { runs, latestResults: results })
   })
 
   app.get('/services', async (c) => {
