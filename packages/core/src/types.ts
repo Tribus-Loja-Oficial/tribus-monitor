@@ -45,7 +45,7 @@ export interface ServiceState {
   updatedAt: string
 }
 
-export type E2EScenarioStatus = 'passed' | 'failed' | 'skipped' | 'timedout'
+export type E2EScenarioStatus = 'passed' | 'failed' | 'skipped' | 'timed_out'
 
 export interface E2ERun {
   id: string

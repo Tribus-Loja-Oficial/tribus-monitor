@@ -131,7 +131,7 @@ export function createApp(bindings?: MonitorEnv) {
         scenarioName: z.string(),
         niche: z.string(),
         environment: z.string(),
-        status: z.enum(['passed', 'failed', 'skipped', 'timedout']),
+        status: z.enum(['passed', 'failed', 'skipped', 'timed_out']),
         criticality: z.string(),
         failureType: z.string().optional(),
         durationMs: z.number(),
@@ -150,7 +150,7 @@ export function createApp(bindings?: MonitorEnv) {
     const total = payload.results.length
     const passed = payload.results.filter((r) => r.status === 'passed').length
     const failed = payload.results.filter(
-      (r) => r.status === 'failed' || r.status === 'timedout'
+      (r) => r.status === 'failed' || r.status === 'timed_out'
     ).length
     const skipped = payload.results.filter((r) => r.status === 'skipped').length
     const passRate = total > 0 ? Math.round((passed / total) * 10000) / 100 : 0
