@@ -230,7 +230,7 @@ function ScenarioItem({ scenario }: { scenario: E2EScenarioResult }) {
       <button
         type="button"
         onClick={() => hasDetails && setOpen((o) => !o)}
-        className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left ${hasDetails ? 'cursor-pointer' : 'cursor-default'}`}
+        className={`flex w-full items-center gap-2 px-3 py-2 text-left ${hasDetails ? 'cursor-pointer' : 'cursor-default'}`}
       >
         <StatusDot status={scenario.status} />
 
@@ -244,9 +244,11 @@ function ScenarioItem({ scenario }: { scenario: E2EScenarioResult }) {
           {scenario.scenarioName}
         </span>
 
-        {/* Right meta */}
+        {/* Right meta — duration hidden on mobile to avoid overflow */}
         <div className="flex shrink-0 items-center gap-1.5">
-          <span className="text-[11px] text-slate-400">{formatDuration(scenario.durationMs)}</span>
+          <span className="hidden text-[11px] text-slate-400 sm:inline">
+            {formatDuration(scenario.durationMs)}
+          </span>
           <CriticalityBadge criticality={scenario.criticality} />
           <StatusBadge status={scenario.status} />
           {hasDetails && <ChevronIcon open={open} />}
@@ -254,7 +256,7 @@ function ScenarioItem({ scenario }: { scenario: E2EScenarioResult }) {
       </button>
 
       {open && hasDetails && (
-        <div className="border-t border-slate-100 px-3 pb-3 pt-2.5 space-y-2.5">
+        <div className="space-y-2 border-t border-slate-100 px-3 pb-3 pt-2.5">
           {/* Description */}
           {description && (
             <p className="text-xs leading-relaxed text-slate-500">
@@ -265,7 +267,7 @@ function ScenarioItem({ scenario }: { scenario: E2EScenarioResult }) {
 
           {/* Failure type */}
           {isFailed && scenario.failureType && (
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-slate-400">Classificação:</span>
               <span className="rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] text-rose-600">
                 {FAILURE_TYPE_LABELS[scenario.failureType] ?? scenario.failureType}
@@ -286,7 +288,7 @@ function ScenarioItem({ scenario }: { scenario: E2EScenarioResult }) {
           )}
 
           {/* Timestamps */}
-          <div className="flex gap-4 text-[11px] text-slate-400">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-400">
             <span>Início: {new Date(scenario.startedAt).toLocaleTimeString('pt-BR')}</span>
             <span>Duração: {formatDuration(scenario.durationMs)}</span>
           </div>
@@ -305,7 +307,6 @@ function SuiteGroup({ suiteId, scenarios }: { suiteId: string; scenarios: E2ESce
   const rate = total > 0 ? (passed / total) * 100 : 0
   const allPassed = failed === 0
 
-  // Start collapsed only if fully passed and no failures anywhere
   const [collapsed, setCollapsed] = useState(allPassed)
 
   const label = getSuiteLabel(suiteId)
@@ -316,15 +317,15 @@ function SuiteGroup({ suiteId, scenarios }: { suiteId: string; scenarios: E2ESce
       <button
         type="button"
         onClick={() => setCollapsed((c) => !c)}
-        className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${headerBg}`}
+        className={`flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors sm:gap-3 sm:px-4 ${headerBg}`}
       >
         {/* Suite name */}
         <span className="flex-1 text-[11px] font-bold uppercase tracking-wider text-slate-600">
           {label}
         </span>
 
-        {/* Mini dot grid */}
-        <div className="flex items-center gap-0.5">
+        {/* Mini dot grid — hidden on mobile */}
+        <div className="hidden items-center gap-0.5 sm:flex">
           {scenarios.map((s) => (
             <span
               key={s.id}
@@ -335,16 +336,16 @@ function SuiteGroup({ suiteId, scenarios }: { suiteId: string; scenarios: E2ESce
         </div>
 
         {/* Counts */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex shrink-0 items-center gap-1.5 text-xs">
           <span className="font-semibold text-emerald-600">{passed} ok</span>
-          {failed > 0 && <span className="font-semibold text-rose-600">{failed} falhou</span>}
+          {failed > 0 && <span className="font-semibold text-rose-600">{failed} ✗</span>}
           <span className={`font-bold tabular-nums ${passRateColor(rate)}`}>
             {rate.toFixed(0)}%
           </span>
         </div>
 
         {allPassed && (
-          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+          <span className="hidden rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 sm:inline">
             ✓ tudo ok
           </span>
         )}
@@ -353,7 +354,7 @@ function SuiteGroup({ suiteId, scenarios }: { suiteId: string; scenarios: E2ESce
       </button>
 
       {!collapsed && (
-        <div className="border-t border-slate-100 p-2 space-y-1">
+        <div className="space-y-1 border-t border-slate-100 p-2">
           {scenarios.map((s) => (
             <ScenarioItem key={s.id} scenario={s} />
           ))}
@@ -395,10 +396,6 @@ function RunCard({ run, scenarios, onDeleteRun }: RunCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  const suiteLabels = scenarios ? getRunSuiteLabels(scenarios) : []
-  const totalDuration = scenarios ? formatTotalDuration(scenarios) : null
-  const summary = scenarios ? generateSummary(run, suiteLabels) : null
-
   async function handleDelete(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault()
     e.stopPropagation()
@@ -414,50 +411,34 @@ function RunCard({ run, scenarios, onDeleteRun }: RunCardProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
       <div className="flex items-stretch">
-        {/* Run header (expand/collapse) */}
         <button
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
-          className="flex min-w-0 flex-1 items-start gap-3 p-4 text-left transition-colors hover:bg-black/[0.02]"
+          className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-black/[0.02]"
         >
           <div className="min-w-0 flex-1">
-            {/* Tags row */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              {suiteLabels.map((l) => (
-                <span
-                  key={l}
-                  className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600"
-                >
-                  {l}
-                </span>
-              ))}
-              <span className="text-xs text-slate-500">{run.runner}</span>
-            </div>
-
-            {/* Timestamps */}
-            <p className="mt-1 text-[11px] text-slate-400">
+            {/* Runner + date */}
+            <p className="truncate text-[11px] text-slate-500">
+              <span className="font-medium text-slate-700">{run.runner}</span>
+              <span className="mx-1 text-slate-300">·</span>
               {new Date(run.emittedAt).toLocaleString('pt-BR')}
-              {' · '}
+              <span className="mx-1 text-slate-300">·</span>
               {formatTimeAgo(run.emittedAt)}
-              {totalDuration && ` · ${totalDuration} total`}
             </p>
-
-            {/* Auto-generated summary */}
-            {summary && <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{summary}</p>}
           </div>
 
-          {/* Pass rate block */}
-          <div className="flex shrink-0 flex-col items-end gap-1">
-            <span className={`text-sm font-bold tabular-nums ${passRateColor(run.passRate)}`}>
-              {run.passRate.toFixed(1)}%
-            </span>
-            <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="font-medium text-emerald-600">{run.passed}✓</span>
-              {run.failed > 0 && <span className="font-medium text-rose-600">{run.failed}✗</span>}
-              {run.skipped > 0 && <span className="text-slate-400">{run.skipped} skip</span>}
-              <span className="text-slate-400">/ {run.total}</span>
+          {/* Pass rate + counts */}
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="text-right">
+              <span className={`text-sm font-bold tabular-nums ${passRateColor(run.passRate)}`}>
+                {run.passRate.toFixed(1)}%
+              </span>
+              <p className="text-[10px] text-slate-400">
+                {run.passed}✓ / {run.total}
+                {run.failed > 0 && <span className="ml-1 text-rose-500">{run.failed}✗</span>}
+              </p>
             </div>
             <ChevronIcon open={expanded} />
           </div>
@@ -469,7 +450,7 @@ function RunCard({ run, scenarios, onDeleteRun }: RunCardProps) {
             disabled={deleting}
             aria-label="Remover esta execução do histórico"
             title="Remover do histórico"
-            className="flex shrink-0 items-center justify-center border-l border-slate-200/80 px-3.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:pointer-events-none disabled:opacity-40"
+            className="flex shrink-0 items-center justify-center border-l border-slate-200/80 px-3 text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-500 disabled:pointer-events-none disabled:opacity-40"
             onClick={handleDelete}
           >
             <TrashIcon />
@@ -477,19 +458,16 @@ function RunCard({ run, scenarios, onDeleteRun }: RunCardProps) {
         )}
       </div>
 
-      {/* Pass rate bar */}
-      <div className="px-4 pb-3">
-        <PassRateBar rate={run.passRate} thin />
-      </div>
+      {/* Thin pass rate bar */}
+      <PassRateBar rate={run.passRate} thin />
 
-      {/* Expanded content */}
       {expanded && (
-        <div className="border-t border-slate-200 p-3">
+        <div className="border-t border-slate-100 p-2">
           {scenarios && scenarios.length > 0 ? (
             <E2ERunScenarios scenarios={scenarios} />
           ) : (
             <p className="py-2 text-center text-xs text-slate-400">
-              Detalhes de cenários disponíveis apenas para o run mais recente.
+              Detalhes disponíveis apenas para o run mais recente.
             </p>
           )}
         </div>
@@ -556,14 +534,28 @@ function ExecutiveSummary({
                   </span>
                 )}
               </div>
-              <p className="mt-2 text-[11px] text-slate-500">
-                {new Date(latest.emittedAt).toLocaleString('pt-BR')}
-                {' · '}
-                {formatTimeAgo(latest.emittedAt)}
-                {` · ${totalDuration} total`}
-                {' · '}
-                <span className="text-slate-600">{latest.runner}</span>
-              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <p className="text-[11px] text-slate-500">
+                  {new Date(latest.emittedAt).toLocaleString('pt-BR')}
+                  {' · '}
+                  {formatTimeAgo(latest.emittedAt)}
+                  {` · ${totalDuration} total`}
+                  {' · '}
+                  <span className="text-slate-600">{latest.runner}</span>
+                </p>
+                {onDeleteRun && (
+                  <button
+                    type="button"
+                    disabled={deleting}
+                    aria-label="Remover esta execução do histórico"
+                    title="Remover do histórico"
+                    className="rounded p-1 text-slate-400 transition-colors hover:bg-rose-50/80 hover:text-rose-500 disabled:pointer-events-none disabled:opacity-40"
+                    onClick={handleDelete}
+                  >
+                    <TrashIcon />
+                  </button>
+                )}
+              </div>
               {suiteLabels.length > 0 && (
                 <p className="mt-1 text-xs text-slate-400">Suítes: {suiteLabels.join(' · ')}</p>
               )}
@@ -617,19 +609,6 @@ function ExecutiveSummary({
             </>
           )}
         </div>
-
-        {onDeleteRun && (
-          <button
-            type="button"
-            disabled={deleting}
-            aria-label="Remover esta execução do histórico"
-            title="Remover do histórico"
-            className="flex shrink-0 items-center justify-center border-l border-slate-200/60 bg-white/30 px-3.5 text-slate-400 transition-colors hover:bg-rose-50/80 hover:text-rose-600 disabled:pointer-events-none disabled:opacity-40"
-            onClick={handleDelete}
-          >
-            <TrashIcon />
-          </button>
-        )}
       </div>
     </div>
   )
