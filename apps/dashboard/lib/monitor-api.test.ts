@@ -97,4 +97,20 @@ describe('fetchDashboardData', () => {
     expect(data.coverage.repos).toEqual(expect.any(Array))
     expect(data.e2e.runs).toHaveLength(0)
   })
+
+  it('uses empty e2e when e2e-results response is not ok', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ services: [] }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ incidents: [] }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ checks: [] }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ repos: [] }) })
+        .mockResolvedValueOnce({ ok: false })
+    )
+    const data = await fetchDashboardDataFromBase('https://api.example')
+    expect(data.e2e.runs).toHaveLength(0)
+    expect(data.e2e.latestResults).toHaveLength(0)
+  })
 })
