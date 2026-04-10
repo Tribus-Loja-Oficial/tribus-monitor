@@ -2,6 +2,11 @@ name = "tribus-monitor-api"
 main = "src/index.ts"
 compatibility_date = "2026-01-01"
 
+[vars]
+MONITOR_CHECKS_TOKEN = ""
+MONITOR_COVERAGE_TOKEN = ""
+MONITOR_E2E_TOKEN = ""
+
 [[d1_databases]]
 binding = "DB"
 database_name = "tribus_monitor_db"
