@@ -88,9 +88,9 @@ function getRunSuiteLabels(results: E2EScenarioResult[]): string[] {
 function generateSummary(run: E2ERun, suiteLabels: string[]): string {
   const type = suiteLabels.length === 1 ? suiteLabels[0]!.toLowerCase() : 'mixed'
   if (run.failed === 0) {
-    return `Run ${type} em ${run.environment} — todos os ${run.total} cenários passaram com sucesso.`
+    return `Run ${type} em ${run.runner} — todos os ${run.total} cenários passaram com sucesso.`
   }
-  return `Run ${type} em ${run.environment} — ${run.passed} de ${run.total} cenários passaram; ${run.failed} falharam.`
+  return `Run ${type} em ${run.runner} — ${run.passed} de ${run.total} cenários passaram; ${run.failed} falharam.`
 }
 
 // ─── Visual tokens ────────────────────────────────────────────────────────────
@@ -390,8 +390,6 @@ function RunCard({ run, isLatest, scenarios }: RunCardProps) {
               </span>
             ))}
             <span className="text-xs text-slate-500">{run.runner}</span>
-            <span className="text-[10px] text-slate-300">·</span>
-            <span className="text-xs text-slate-500">{run.environment}</span>
           </div>
 
           {/* Timestamps */}
@@ -480,7 +478,7 @@ function ExecutiveSummary({
             )}
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Último run {formatTimeAgo(latest.emittedAt)} · {latest.environment} · {latest.runner}
+            Último run {formatTimeAgo(latest.emittedAt)} · {latest.runner}
           </p>
           {suiteLabels.length > 0 && (
             <p className="mt-0.5 text-xs text-slate-400">Suítes: {suiteLabels.join(' · ')}</p>
