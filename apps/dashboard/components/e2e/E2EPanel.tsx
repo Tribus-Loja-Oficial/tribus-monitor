@@ -5,6 +5,15 @@ import type { E2ERun, E2EScenarioResult } from '@tribus-monitor/core'
 import type { E2EData } from '../../lib/monitor-api'
 import { formatTimeAgo } from '../../lib/time'
 import { SectionCard } from '../ui/SectionCard'
+import { useMonitorDialogs } from '../ui/MonitorDialogs'
+
+const DELETE_RUN_CONFIRM = {
+  title: 'Remover esta execução?',
+  message: 'Os dados deixam de aparecer no dashboard. Esta ação é permanente na base de dados.',
+  variant: 'danger' as const,
+  confirmLabel: 'Remover',
+  cancelLabel: 'Cancelar',
+}
 
 // ─── Static scenario descriptions ────────────────────────────────────────────
 
@@ -382,6 +391,7 @@ interface RunCardProps {
 }
 
 function RunCard({ run, scenarios, onDeleteRun }: RunCardProps) {
+  const { confirm } = useMonitorDialogs()
   const [expanded, setExpanded] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -393,13 +403,8 @@ function RunCard({ run, scenarios, onDeleteRun }: RunCardProps) {
     e.preventDefault()
     e.stopPropagation()
     if (!onDeleteRun) return
-    if (
-      !window.confirm(
-        'Remover esta execução do histórico? Os dados deixam de aparecer no dashboard (ação permanente na base).'
-      )
-    ) {
-      return
-    }
+    const ok = await confirm(DELETE_RUN_CONFIRM)
+    if (!ok) return
     setDeleting(true)
     try {
       await onDeleteRun(run.id)
@@ -504,6 +509,7 @@ function ExecutiveSummary({
   latestResults: E2EScenarioResult[]
   onDeleteRun?: (runId: string) => Promise<void>
 }) {
+  const { confirm } = useMonitorDialogs()
   const [expanded, setExpanded] = useState(true)
   const [deleting, setDeleting] = useState(false)
   const suiteLabels = getRunSuiteLabels(latestResults)
@@ -516,13 +522,8 @@ function ExecutiveSummary({
     e.preventDefault()
     e.stopPropagation()
     if (!onDeleteRun) return
-    if (
-      !window.confirm(
-        'Remover esta execução do histórico? Os dados deixam de aparecer no dashboard (ação permanente na base).'
-      )
-    ) {
-      return
-    }
+    const ok = await confirm(DELETE_RUN_CONFIRM)
+    if (!ok) return
     setDeleting(true)
     try {
       await onDeleteRun(latest.id)
@@ -643,6 +644,7 @@ interface E2EPanelProps {
 
 export function E2EPanel({ e2e, onRunsChanged }: E2EPanelProps) {
   const { runs, latestResults } = e2e
+  const { alert: alertDialog } = useMonitorDialogs()
 
   const handleDeleteRun = useCallback(
     async (runId: string) => {
@@ -655,12 +657,12 @@ export function E2EPanel({ e2e, onRunsChanged }: E2EPanelProps) {
         } catch {
           /* ignore */
         }
-        window.alert(msg)
+        await alertDialog(msg, { title: 'Não foi possível remover' })
         return
       }
       await onRunsChanged?.()
     },
-    [onRunsChanged]
+    [alertDialog, onRunsChanged]
   )
 
   if (runs.length === 0) {
