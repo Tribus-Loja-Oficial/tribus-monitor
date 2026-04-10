@@ -437,6 +437,66 @@ describe('monitor-api', () => {
     expect(listBody.latestResults).toHaveLength(2)
   })
 
+  it('requires bearer token for DELETE /e2e-results/:runId', async () => {
+    const app = createApp(env)
+    const res = await app.request('/e2e-results/00000000-0000-4000-8000-000000000001', {
+      method: 'DELETE',
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('rejects DELETE /e2e-results/:runId with invalid run id', async () => {
+    const app = createApp(env)
+    const res = await app.request('/e2e-results/not-a-uuid', {
+      method: 'DELETE',
+      headers: { authorization: 'Bearer e2e-token' },
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('deletes an E2E run and its scenario rows', async () => {
+    const app = createApp(env)
+    const post = await app.request('/e2e-results', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer e2e-token' },
+      body: JSON.stringify({
+        source: 'tribus-e2e',
+        runner: 'local',
+        checkType: 'functional_e2e',
+        emittedAt: '2026-01-01T10:00:00.000Z',
+        results: [
+          {
+            suiteId: 'storefront-smoke',
+            scenarioId: 'J05-login-valid',
+            scenarioName: 'Login valido',
+            niche: 'corrida',
+            environment: 'production',
+            status: 'passed',
+            criticality: 'P0',
+            durationMs: 100,
+            startedAt: '2026-01-01T10:00:00.000Z',
+            finishedAt: '2026-01-01T10:00:00.100Z',
+          },
+        ],
+      }),
+    })
+    expect(post.status).toBe(201)
+    const { runId } = (await post.json()) as { runId: string }
+
+    const del = await app.request(`/e2e-results/${runId}`, {
+      method: 'DELETE',
+      headers: { authorization: 'Bearer e2e-token' },
+    })
+    expect(del.status).toBe(200)
+    const delBody = await del.json()
+    expect(delBody.deleted).toBe(true)
+
+    const list = await app.request('/e2e-results')
+    const listBody = await list.json()
+    expect(listBody.runs).toHaveLength(0)
+    expect(listBody.latestResults).toHaveLength(0)
+  })
+
   it('returns empty latestResults when no E2E runs exist', async () => {
     const app = createApp(env)
     const res = await app.request('/e2e-results')

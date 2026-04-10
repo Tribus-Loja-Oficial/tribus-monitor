@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState, type MouseEvent } from 'react'
 import type { E2ERun, E2EScenarioResult } from '@tribus-monitor/core'
 import type { E2EData } from '../../lib/monitor-api'
 import { formatTimeAgo } from '../../lib/time'
@@ -168,6 +168,25 @@ function ChevronIcon({ open }: { open: boolean }) {
       strokeWidth={2}
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+      />
     </svg>
   )
 }
@@ -341,10 +360,12 @@ interface RunCardProps {
   run: E2ERun
   isLatest: boolean
   scenarios: E2EScenarioResult[] | null
+  onDeleteRun?: (runId: string) => Promise<void>
 }
 
-function RunCard({ run, isLatest, scenarios }: RunCardProps) {
+function RunCard({ run, isLatest, scenarios, onDeleteRun }: RunCardProps) {
   const [expanded, setExpanded] = useState(isLatest)
+  const [deleting, setDeleting] = useState(false)
 
   const suiteLabels = scenarios ? getRunSuiteLabels(scenarios) : []
   const totalDuration = scenarios ? formatTotalDuration(scenarios) : null
@@ -365,59 +386,93 @@ function RunCard({ run, isLatest, scenarios }: RunCardProps) {
       : 'border-emerald-200 bg-emerald-50/20'
     : 'border-slate-200 bg-white'
 
+  async function handleDelete(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!onDeleteRun) return
+    if (
+      !window.confirm(
+        'Remover esta execução do histórico? Os dados deixam de aparecer no dashboard (ação permanente na base).'
+      )
+    ) {
+      return
+    }
+    setDeleting(true)
+    try {
+      await onDeleteRun(run.id)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className={`overflow-hidden rounded-xl border ${outerCls}`}>
-      {/* Run header */}
-      <button
-        type="button"
-        onClick={() => setExpanded((e) => !e)}
-        className="flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-black/[0.02]"
-      >
-        <div className="min-w-0 flex-1">
-          {/* Tags row */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {isLatest && (
-              <span className="rounded-full bg-blue-500 px-2 py-0.5 text-[10px] font-semibold text-white">
-                último
-              </span>
-            )}
-            {suiteLabels.map((l) => (
-              <span
-                key={l}
-                className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600"
-              >
-                {l}
-              </span>
-            ))}
-            <span className="text-xs text-slate-500">{run.runner}</span>
+      <div className="flex items-stretch">
+        {/* Run header (expand/collapse) */}
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="flex min-w-0 flex-1 items-start gap-3 p-4 text-left transition-colors hover:bg-black/[0.02]"
+        >
+          <div className="min-w-0 flex-1">
+            {/* Tags row */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {isLatest && (
+                <span className="rounded-full bg-blue-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                  último
+                </span>
+              )}
+              {suiteLabels.map((l) => (
+                <span
+                  key={l}
+                  className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600"
+                >
+                  {l}
+                </span>
+              ))}
+              <span className="text-xs text-slate-500">{run.runner}</span>
+            </div>
+
+            {/* Timestamps */}
+            <p className="mt-1 text-[11px] text-slate-400">
+              {new Date(run.emittedAt).toLocaleString('pt-BR')}
+              {' · '}
+              {formatTimeAgo(run.emittedAt)}
+              {totalDuration && ` · ${totalDuration} total`}
+            </p>
+
+            {/* Auto-generated summary */}
+            {summary && <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{summary}</p>}
           </div>
 
-          {/* Timestamps */}
-          <p className="mt-1 text-[11px] text-slate-400">
-            {new Date(run.emittedAt).toLocaleString('pt-BR')}
-            {' · '}
-            {formatTimeAgo(run.emittedAt)}
-            {totalDuration && ` · ${totalDuration} total`}
-          </p>
-
-          {/* Auto-generated summary */}
-          {summary && <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{summary}</p>}
-        </div>
-
-        {/* Pass rate block */}
-        <div className="flex shrink-0 flex-col items-end gap-1">
-          <span className={`text-sm font-bold tabular-nums ${passRateColor(run.passRate)}`}>
-            {run.passRate.toFixed(1)}%
-          </span>
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <span className="font-medium text-emerald-600">{run.passed}✓</span>
-            {run.failed > 0 && <span className="font-medium text-rose-600">{run.failed}✗</span>}
-            {run.skipped > 0 && <span className="text-slate-400">{run.skipped} skip</span>}
-            <span className="text-slate-400">/ {run.total}</span>
+          {/* Pass rate block */}
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <span className={`text-sm font-bold tabular-nums ${passRateColor(run.passRate)}`}>
+              {run.passRate.toFixed(1)}%
+            </span>
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <span className="font-medium text-emerald-600">{run.passed}✓</span>
+              {run.failed > 0 && <span className="font-medium text-rose-600">{run.failed}✗</span>}
+              {run.skipped > 0 && <span className="text-slate-400">{run.skipped} skip</span>}
+              <span className="text-slate-400">/ {run.total}</span>
+            </div>
+            <ChevronIcon open={expanded} />
           </div>
-          <ChevronIcon open={expanded} />
-        </div>
-      </button>
+        </button>
+
+        {onDeleteRun && (
+          <button
+            type="button"
+            disabled={deleting}
+            aria-label="Remover esta execução do histórico"
+            title="Remover do histórico"
+            className="flex shrink-0 items-center justify-center border-l border-slate-200/80 px-3.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:pointer-events-none disabled:opacity-40"
+            onClick={handleDelete}
+          >
+            <TrashIcon />
+          </button>
+        )}
+      </div>
 
       {/* Pass rate bar */}
       <div className="px-4 pb-3">
@@ -516,10 +571,30 @@ function ExecutiveSummary({
 
 interface E2EPanelProps {
   e2e: E2EData
+  onRunsChanged?: () => void | Promise<void>
 }
 
-export function E2EPanel({ e2e }: E2EPanelProps) {
+export function E2EPanel({ e2e, onRunsChanged }: E2EPanelProps) {
   const { runs, latestResults } = e2e
+
+  const handleDeleteRun = useCallback(
+    async (runId: string) => {
+      const res = await fetch(`/api/e2e-runs/${encodeURIComponent(runId)}`, { method: 'DELETE' })
+      if (!res.ok) {
+        let msg = 'Não foi possível remover esta execução.'
+        try {
+          const j = (await res.json()) as { error?: string }
+          if (typeof j.error === 'string') msg = j.error
+        } catch {
+          /* ignore */
+        }
+        window.alert(msg)
+        return
+      }
+      await onRunsChanged?.()
+    },
+    [onRunsChanged]
+  )
 
   if (runs.length === 0) {
     return (
@@ -560,6 +635,7 @@ export function E2EPanel({ e2e }: E2EPanelProps) {
                 run={run}
                 isLatest={i === 0}
                 scenarios={i === 0 ? latestResults : null}
+                {...(onRunsChanged ? { onDeleteRun: handleDeleteRun } : {})}
               />
             ))}
           </div>

@@ -42,6 +42,7 @@ function mkRepos(): StorageRepositories {
       insertRun: vi.fn(async () => {}),
       listRuns: vi.fn(async () => []),
       listResultsByRun: vi.fn(async () => []),
+      deleteRun: vi.fn(async () => {}),
     },
   }
 }

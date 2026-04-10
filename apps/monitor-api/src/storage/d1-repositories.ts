@@ -537,6 +537,10 @@ export function createD1Repositories(dbBinding: unknown): StorageRepositories {
           .all<E2EResultRow>()
         return result.results.map(mapE2EResult)
       },
+      async deleteRun(runId) {
+        await db.prepare(`DELETE FROM e2e_results WHERE run_id = ?`).bind(runId).run()
+        await db.prepare(`DELETE FROM e2e_runs WHERE id = ?`).bind(runId).run()
+      },
     },
   }
 }

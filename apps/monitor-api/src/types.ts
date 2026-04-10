@@ -44,6 +44,7 @@ export interface StorageRepositories {
     insertRun(run: E2ERun, results: E2EScenarioResult[]): Promise<void>
     listRuns(limit?: number): Promise<E2ERun[]>
     listResultsByRun(runId: string): Promise<E2EScenarioResult[]>
+    deleteRun(runId: string): Promise<void>
   }
 }
 

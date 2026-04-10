@@ -54,20 +54,22 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
     [router, searchParams]
   )
 
-  useEffect(() => {
-    const intervalId = setInterval(async () => {
-      try {
-        const res = await fetch('/api/dashboard', { cache: 'no-store' })
-        if (!res.ok) return
-        const payload = (await res.json()) as DashboardData
-        setData(payload)
-      } catch {
-        // best effort refresh
-      }
-    }, 15000)
-
-    return () => clearInterval(intervalId)
+  const refreshDashboard = useCallback(async () => {
+    try {
+      const res = await fetch('/api/dashboard', { cache: 'no-store' })
+      if (!res.ok) return
+      setData((await res.json()) as DashboardData)
+    } catch {
+      // best effort refresh
+    }
   }, [])
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      void refreshDashboard()
+    }, 15000)
+    return () => clearInterval(intervalId)
+  }, [refreshDashboard])
 
   const groupedServices = useMemo(() => groupServicesByDomain(data.services), [data.services])
   const checksByService = useMemo(() => groupChecksByService(data.checks), [data.checks])
@@ -267,7 +269,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
                   pipeline do tribus-e2e.
                 </p>
               </header>
-              <E2EPanel e2e={data.e2e} />
+              <E2EPanel e2e={data.e2e} onRunsChanged={refreshDashboard} />
             </section>
           ) : (
             <SectionCard

@@ -81,5 +81,9 @@ describe('createInMemoryRepositories', () => {
 
     const empty = await repos.e2e.listResultsByRun('nonexistent')
     expect(empty).toHaveLength(0)
+
+    await repos.e2e.deleteRun('run-1')
+    expect(await repos.e2e.listRuns()).toHaveLength(0)
+    expect(await repos.e2e.listResultsByRun('run-1')).toHaveLength(0)
   })
 })

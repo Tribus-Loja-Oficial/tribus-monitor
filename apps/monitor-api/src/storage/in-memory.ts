@@ -90,6 +90,13 @@ export function createInMemoryRepositories(): StorageRepositories {
           .filter((r) => r.runId === runId)
           .sort((a, b) => a.startedAt.localeCompare(b.startedAt))
       },
+      async deleteRun(runId) {
+        e2eRuns.delete(runId)
+        for (const id of [...e2eResults.keys()]) {
+          const row = e2eResults.get(id)
+          if (row?.runId === runId) e2eResults.delete(id)
+        }
+      },
     },
   }
 }

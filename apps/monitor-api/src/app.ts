@@ -203,6 +203,12 @@ export function createApp(bindings?: MonitorEnv) {
     return ok(c, { runs, latestResults: results })
   })
 
+  app.delete('/e2e-results/:runId', e2eAuth, async (c) => {
+    const runId = z.string().uuid().parse(c.req.param('runId'))
+    await c.get('repositories').e2e.deleteRun(runId)
+    return ok(c, { deleted: true })
+  })
+
   app.get('/services', async (c) => {
     const rows = await c.get('repositories').serviceStates.list()
     return ok(c, {

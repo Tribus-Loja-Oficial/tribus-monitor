@@ -192,6 +192,19 @@ function createMemoryD1() {
             created_at: args[10] as string,
           })
         }
+        if (q.includes('DELETE FROM e2e_results') && q.includes('run_id')) {
+          const runId = args[0] as string
+          for (let i = e2eResultRows.length - 1; i >= 0; i--) {
+            if (e2eResultRows[i]!.run_id === runId) e2eResultRows.splice(i, 1)
+          }
+          return
+        }
+        if (q.includes('DELETE FROM e2e_runs')) {
+          const id = args[0] as string
+          const idx = e2eRunRows.findIndex((r) => r.id === id)
+          if (idx >= 0) e2eRunRows.splice(idx, 1)
+          return
+        }
         if (q.includes('INSERT INTO e2e_results')) {
           e2eResultRows.push({
             id: args[0] as string,
@@ -467,5 +480,9 @@ describe('createD1Repositories', () => {
 
     const empty = await repos.e2e.listResultsByRun('nonexistent')
     expect(empty).toHaveLength(0)
+
+    await repos.e2e.deleteRun('run-d1-1')
+    expect(await repos.e2e.listRuns(10)).toHaveLength(0)
+    expect(await repos.e2e.listResultsByRun('run-d1-1')).toHaveLength(0)
   })
 })
