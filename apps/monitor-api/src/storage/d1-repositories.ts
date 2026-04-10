@@ -99,6 +99,7 @@ type E2EResultRow = {
   status: string
   criticality: string
   failure_type: string | null
+  error_message: string | null
   duration_ms: number
   started_at: string
   finished_at: string
@@ -132,6 +133,7 @@ function mapE2EResult(row: E2EResultRow): E2EScenarioResult {
     status: row.status as E2EScenarioResult['status'],
     criticality: row.criticality,
     failureType: row.failure_type,
+    errorMessage: row.error_message,
     durationMs: row.duration_ms,
     startedAt: row.started_at,
     finishedAt: row.finished_at,
@@ -472,8 +474,8 @@ export function createD1Repositories(dbBinding: unknown): StorageRepositories {
         for (const r of results) {
           await db
             .prepare(
-              `INSERT INTO e2e_results (id, run_id, suite_id, scenario_id, scenario_name, niche, environment, status, criticality, failure_type, duration_ms, started_at, finished_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+              `INSERT INTO e2e_results (id, run_id, suite_id, scenario_id, scenario_name, niche, environment, status, criticality, failure_type, error_message, duration_ms, started_at, finished_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             )
             .bind(
               r.id,
@@ -486,6 +488,7 @@ export function createD1Repositories(dbBinding: unknown): StorageRepositories {
               r.status,
               r.criticality,
               r.failureType,
+              r.errorMessage,
               r.durationMs,
               r.startedAt,
               r.finishedAt

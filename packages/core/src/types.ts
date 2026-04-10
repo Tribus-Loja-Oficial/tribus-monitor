@@ -72,6 +72,7 @@ export interface E2EScenarioResult {
   status: E2EScenarioStatus
   criticality: string
   failureType: string | null
+  errorMessage: string | null
   durationMs: number
   startedAt: string
   finishedAt: string
