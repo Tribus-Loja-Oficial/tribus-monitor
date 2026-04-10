@@ -216,31 +216,45 @@ export function createD1Repositories(dbBinding: unknown): StorageRepositories {
   return {
     checkResults: {
       async insertMany(rows) {
+        if (rows.length === 0) return
+
+        const statements: D1Prepared[] = []
         for (const row of rows) {
-          await db
-            .prepare(
-              `
+          statements.push(
+            db
+              .prepare(
+                `
               INSERT INTO check_results (
                 id, service_key, service_name, kind, niche, url, status_code, latency_ms, ok, error, checked_at, source, created_at
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
               `
-            )
-            .bind(
-              row.id,
-              row.serviceKey,
-              row.serviceName,
-              row.kind,
-              row.niche,
-              row.url,
-              row.statusCode,
-              row.latencyMs,
-              row.ok ? 1 : 0,
-              row.error,
-              row.checkedAt,
-              row.source,
-              row.createdAt
-            )
-            .run()
+              )
+              .bind(
+                row.id,
+                row.serviceKey,
+                row.serviceName,
+                row.kind,
+                row.niche,
+                row.url,
+                row.statusCode,
+                row.latencyMs,
+                row.ok ? 1 : 0,
+                row.error,
+                row.checkedAt,
+                row.source,
+                row.createdAt
+              )
+          )
+        }
+
+        if ('batch' in db) {
+          await (db as unknown as { batch: (stmts: D1Prepared[]) => Promise<unknown> }).batch(
+            statements
+          )
+        } else {
+          for (const stmt of statements) {
+            await stmt.run()
+          }
         }
       },
       async list(limit = 200) {
@@ -452,48 +466,61 @@ export function createD1Repositories(dbBinding: unknown): StorageRepositories {
     },
     e2e: {
       async insertRun(run, results) {
-        await db
-          .prepare(
-            `INSERT INTO e2e_runs (id, source, runner, environment, emitted_at, total, passed, failed, skipped, pass_rate, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-          )
-          .bind(
-            run.id,
-            run.source,
-            run.runner,
-            run.environment,
-            run.emittedAt,
-            run.total,
-            run.passed,
-            run.failed,
-            run.skipped,
-            run.passRate,
-            run.createdAt
-          )
-          .run()
-        for (const r of results) {
-          await db
+        const statements: D1Prepared[] = [
+          db
             .prepare(
-              `INSERT INTO e2e_results (id, run_id, suite_id, scenario_id, scenario_name, niche, environment, status, criticality, failure_type, error_message, duration_ms, started_at, finished_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+              `INSERT INTO e2e_runs (id, source, runner, environment, emitted_at, total, passed, failed, skipped, pass_rate, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             )
             .bind(
-              r.id,
-              r.runId,
-              r.suiteId,
-              r.scenarioId,
-              r.scenarioName,
-              r.niche,
-              r.environment,
-              r.status,
-              r.criticality,
-              r.failureType,
-              r.errorMessage,
-              r.durationMs,
-              r.startedAt,
-              r.finishedAt
-            )
-            .run()
+              run.id,
+              run.source,
+              run.runner,
+              run.environment,
+              run.emittedAt,
+              run.total,
+              run.passed,
+              run.failed,
+              run.skipped,
+              run.passRate,
+              run.createdAt
+            ),
+        ]
+
+        for (const r of results) {
+          statements.push(
+            db
+              .prepare(
+                `INSERT INTO e2e_results (id, run_id, suite_id, scenario_id, scenario_name, niche, environment, status, criticality, failure_type, error_message, duration_ms, started_at, finished_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+              )
+              .bind(
+                r.id,
+                r.runId,
+                r.suiteId,
+                r.scenarioId,
+                r.scenarioName,
+                r.niche,
+                r.environment,
+                r.status,
+                r.criticality,
+                r.failureType,
+                r.errorMessage,
+                r.durationMs,
+                r.startedAt,
+                r.finishedAt
+              )
+          )
+        }
+
+        if ('batch' in db) {
+          await (db as unknown as { batch: (stmts: D1Prepared[]) => Promise<unknown> }).batch(
+            statements
+          )
+        } else {
+          for (const stmt of statements) {
+            await stmt.run()
+          }
         }
       },
       async listRuns(limit = 30) {
