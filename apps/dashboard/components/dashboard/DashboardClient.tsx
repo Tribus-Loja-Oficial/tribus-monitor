@@ -29,10 +29,10 @@ function groupChecksByService(checks: CheckResult[]): Record<string, CheckResult
   return out
 }
 
-type TabId = 'services' | 'coverage' | 'e2e' | 'business'
+type TabId = 'services' | 'coverage' | 'e2e'
 
 function isValidTab(v: string | null): v is TabId {
-  return v === 'services' || v === 'coverage' || v === 'e2e' || v === 'business'
+  return v === 'services' || v === 'coverage' || v === 'e2e'
 }
 
 export function DashboardClient({ initialData }: DashboardClientProps) {
@@ -163,51 +163,27 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-        <nav className="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50/80 p-2">
-          <button
-            type="button"
-            onClick={() => switchTab('services')}
-            className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
-              activeTab === 'services'
-                ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
-                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
-            }`}
-          >
-            Serviços
-          </button>
-          <button
-            type="button"
-            onClick={() => switchTab('coverage')}
-            className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
-              activeTab === 'coverage'
-                ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
-                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
-            }`}
-          >
-            Cobertura de testes
-          </button>
-          <button
-            type="button"
-            onClick={() => switchTab('e2e')}
-            className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
-              activeTab === 'e2e'
-                ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
-                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
-            }`}
-          >
-            E2E
-          </button>
-          <button
-            type="button"
-            onClick={() => switchTab('business')}
-            className={`rounded-lg border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition ${
-              activeTab === 'business'
-                ? 'border-slate-300 bg-white text-slate-900 shadow-sm'
-                : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/90 hover:text-slate-900'
-            }`}
-          >
-            Validações de negócio
-          </button>
+        <nav className="flex border-b border-slate-200 bg-slate-50/60 px-3">
+          {(
+            [
+              { id: 'services', label: 'Serviços' },
+              { id: 'coverage', label: 'Cobertura de testes' },
+              { id: 'e2e', label: 'E2E' },
+            ] as { id: TabId; label: string }[]
+          ).map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => switchTab(id)}
+              className={`relative px-4 py-3 text-xs font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none ${
+                activeTab === id
+                  ? 'text-slate-900 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-slate-700'
+                  : 'text-slate-400 hover:text-slate-700'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </nav>
 
         <div className="p-4 md:p-5">
@@ -271,20 +247,7 @@ export function DashboardClient({ initialData }: DashboardClientProps) {
               </header>
               <E2EPanel e2e={data.e2e} onRunsChanged={refreshDashboard} />
             </section>
-          ) : (
-            <SectionCard
-              title="Validações de negócio"
-              subtitle="Módulo planejado para regras operacionais, sinais de negócio e consistência de dados."
-            >
-              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 text-sm text-slate-700">
-                <p className="font-medium text-slate-900">Em evolução</p>
-                <p className="mt-1">
-                  Esta área será dedicada a verificações de negócio (SLA de pedidos, saúde de funis,
-                  integridade de catálogo e alertas de risco operacional).
-                </p>
-              </div>
-            </SectionCard>
-          )}
+          ) : null}
         </div>
       </section>
     </main>
