@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { createApp } from './app'
 
-const env = { MONITOR_CHECKS_TOKEN: 'secret-token', MONITOR_COVERAGE_TOKEN: 'coverage-token' }
+const env = {
+  MONITOR_CHECKS_TOKEN: 'secret-token',
+  MONITOR_COVERAGE_TOKEN: 'coverage-token',
+  MONITOR_E2E_TOKEN: 'e2e-token',
+}
 
 function mkCheck(ok: boolean, at: string) {
   return {
@@ -343,6 +347,94 @@ describe('monitor-api', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.service.serviceKey).toBe('storefront-health')
+  })
+
+  it('requires bearer token for POST /e2e-results', async () => {
+    const app = createApp(env)
+    const res = await app.request('/e2e-results', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('rejects POST /e2e-results with wrong token', async () => {
+    const app = createApp(env)
+    const res = await app.request('/e2e-results', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer wrong' },
+      body: JSON.stringify({}),
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('rejects POST /e2e-results with invalid payload', async () => {
+    const app = createApp(env)
+    const res = await app.request('/e2e-results', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer e2e-token' },
+      body: JSON.stringify({ source: 'tribus-e2e' }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('ingests and lists E2E results', async () => {
+    const app = createApp(env)
+    const payload = {
+      source: 'tribus-e2e',
+      runner: 'github-actions',
+      checkType: 'functional_e2e',
+      emittedAt: '2026-01-01T10:00:00.000Z',
+      results: [
+        {
+          suiteId: 'storefront-smoke',
+          scenarioId: 'J05-login-valid',
+          scenarioName: 'Login valido',
+          niche: 'corrida',
+          environment: 'production',
+          status: 'passed',
+          criticality: 'P0',
+          durationMs: 3200,
+          startedAt: '2026-01-01T10:00:00.000Z',
+          finishedAt: '2026-01-01T10:00:03.200Z',
+        },
+        {
+          suiteId: 'storefront-smoke',
+          scenarioId: 'J06-login-invalid',
+          scenarioName: 'Login invalido',
+          niche: 'corrida',
+          environment: 'production',
+          status: 'failed',
+          criticality: 'P1',
+          failureType: 'functional',
+          errorMessage: 'Expected error banner to be visible',
+          durationMs: 8000,
+          startedAt: '2026-01-01T10:00:04.000Z',
+          finishedAt: '2026-01-01T10:00:12.000Z',
+        },
+      ],
+    }
+
+    const post = await app.request('/e2e-results', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer e2e-token' },
+      body: JSON.stringify(payload),
+    })
+    expect(post.status).toBe(201)
+    const postBody = await post.json()
+    expect(postBody.saved).toBe(true)
+    expect(typeof postBody.runId).toBe('string')
+
+    const list = await app.request('/e2e-results?limit=5')
+    expect(list.status).toBe(200)
+    const listBody = await list.json()
+    expect(listBody.runs).toHaveLength(1)
+    expect(listBody.runs[0].total).toBe(2)
+    expect(listBody.runs[0].passed).toBe(1)
+    expect(listBody.runs[0].failed).toBe(1)
+    expect(listBody.runs[0].passRate).toBe(50)
+    expect(listBody.latestResults).toHaveLength(2)
   })
 
   it('sorts services with same status alphabetically by serviceKey', async () => {
