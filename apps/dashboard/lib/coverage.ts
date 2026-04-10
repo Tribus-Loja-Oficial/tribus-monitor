@@ -46,7 +46,7 @@ export const DEFAULT_REPOS: CoverageRepoSnapshot[] = [
   },
   {
     key: 'real-state',
-    name: 'Real State Landing',
+    name: 'Real State',
     lines: null,
     functions: null,
     branches: null,

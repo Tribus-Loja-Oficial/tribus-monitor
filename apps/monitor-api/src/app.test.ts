@@ -136,7 +136,7 @@ describe('monitor-api', () => {
       },
       body: JSON.stringify({
         repoKey: 'real-state',
-        repoName: 'Real State Landing',
+        repoName: 'Real State',
         lines: 100,
         functions: 100,
         branches: 100,
