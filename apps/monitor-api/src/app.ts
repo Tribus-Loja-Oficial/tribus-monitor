@@ -130,7 +130,7 @@ export function createApp(bindings?: MonitorEnv) {
         scenarioId: z.string(),
         scenarioName: z.string(),
         niche: z.string(),
-        environment: z.string(),
+        environment: z.string().optional().default('production'),
         status: z.enum(['passed', 'failed', 'skipped', 'timed_out']),
         criticality: z.string(),
         failureType: z.string().nullish(),
