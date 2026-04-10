@@ -354,37 +354,40 @@ function SuiteGroup({ suiteId, scenarios }: { suiteId: string; scenarios: E2ESce
   )
 }
 
-// ─── RunCard ──────────────────────────────────────────────────────────────────
+// ─── Run scenario tree (latest run only) ─────────────────────────────────────
 
-interface RunCardProps {
-  run: E2ERun
-  isLatest: boolean
-  scenarios: E2EScenarioResult[] | null
-  onDeleteRun?: (runId: string) => Promise<void>
-}
-
-function RunCard({ run, isLatest, scenarios, onDeleteRun }: RunCardProps) {
-  const [expanded, setExpanded] = useState(isLatest)
-  const [deleting, setDeleting] = useState(false)
-
-  const suiteLabels = scenarios ? getRunSuiteLabels(scenarios) : []
-  const totalDuration = scenarios ? formatTotalDuration(scenarios) : null
-  const summary = scenarios ? generateSummary(run, suiteLabels) : null
-
-  const bySuite = (scenarios ?? []).reduce<Record<string, E2EScenarioResult[]>>((acc, r) => {
+function E2ERunScenarios({ scenarios }: { scenarios: E2EScenarioResult[] }) {
+  const bySuite = scenarios.reduce<Record<string, E2EScenarioResult[]>>((acc, r) => {
     ;(acc[r.suiteId] ??= []).push(r)
     return acc
   }, {})
   const sortedSuites = Object.keys(bySuite).sort(
     (a, b) => SUITE_ORDER.indexOf(a) - SUITE_ORDER.indexOf(b)
   )
+  return (
+    <div className="space-y-2">
+      {sortedSuites.map((suiteId) => (
+        <SuiteGroup key={suiteId} suiteId={suiteId} scenarios={bySuite[suiteId] ?? []} />
+      ))}
+    </div>
+  )
+}
 
-  const hasFailed = run.failed > 0
-  const outerCls = isLatest
-    ? hasFailed
-      ? 'border-rose-200 bg-rose-50/20'
-      : 'border-emerald-200 bg-emerald-50/20'
-    : 'border-slate-200 bg-white'
+// ─── RunCard ──────────────────────────────────────────────────────────────────
+
+interface RunCardProps {
+  run: E2ERun
+  scenarios: E2EScenarioResult[] | null
+  onDeleteRun?: (runId: string) => Promise<void>
+}
+
+function RunCard({ run, scenarios, onDeleteRun }: RunCardProps) {
+  const [expanded, setExpanded] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const suiteLabels = scenarios ? getRunSuiteLabels(scenarios) : []
+  const totalDuration = scenarios ? formatTotalDuration(scenarios) : null
+  const summary = scenarios ? generateSummary(run, suiteLabels) : null
 
   async function handleDelete(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault()
@@ -406,7 +409,7 @@ function RunCard({ run, isLatest, scenarios, onDeleteRun }: RunCardProps) {
   }
 
   return (
-    <div className={`overflow-hidden rounded-xl border ${outerCls}`}>
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="flex items-stretch">
         {/* Run header (expand/collapse) */}
         <button
@@ -417,11 +420,6 @@ function RunCard({ run, isLatest, scenarios, onDeleteRun }: RunCardProps) {
           <div className="min-w-0 flex-1">
             {/* Tags row */}
             <div className="flex flex-wrap items-center gap-1.5">
-              {isLatest && (
-                <span className="rounded-full bg-blue-500 px-2 py-0.5 text-[10px] font-semibold text-white">
-                  último
-                </span>
-              )}
               {suiteLabels.map((l) => (
                 <span
                   key={l}
@@ -483,11 +481,7 @@ function RunCard({ run, isLatest, scenarios, onDeleteRun }: RunCardProps) {
       {expanded && (
         <div className="border-t border-slate-200 p-3">
           {scenarios && scenarios.length > 0 ? (
-            <div className="space-y-2">
-              {sortedSuites.map((suiteId) => (
-                <SuiteGroup key={suiteId} suiteId={suiteId} scenarios={bySuite[suiteId] ?? []} />
-              ))}
-            </div>
+            <E2ERunScenarios scenarios={scenarios} />
           ) : (
             <p className="py-2 text-center text-xs text-slate-400">
               Detalhes de cenários disponíveis apenas para o run mais recente.
@@ -504,64 +498,137 @@ function RunCard({ run, isLatest, scenarios, onDeleteRun }: RunCardProps) {
 function ExecutiveSummary({
   latest,
   latestResults,
+  onDeleteRun,
 }: {
   latest: E2ERun
   latestResults: E2EScenarioResult[]
+  onDeleteRun?: (runId: string) => Promise<void>
 }) {
+  const [expanded, setExpanded] = useState(true)
+  const [deleting, setDeleting] = useState(false)
   const suiteLabels = getRunSuiteLabels(latestResults)
+  const totalDuration = formatTotalDuration(latestResults)
+  const summary = generateSummary(latest, suiteLabels)
   const hasFailed = latest.failed > 0
   const bgCls = hasFailed ? 'border-rose-200 bg-rose-50' : 'border-emerald-200 bg-emerald-50'
 
+  async function handleDelete(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!onDeleteRun) return
+    if (
+      !window.confirm(
+        'Remover esta execução do histórico? Os dados deixam de aparecer no dashboard (ação permanente na base).'
+      )
+    ) {
+      return
+    }
+    setDeleting(true)
+    try {
+      await onDeleteRun(latest.id)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
-    <div className={`rounded-xl border p-4 ${bgCls}`}>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <span className={`text-2xl font-bold tabular-nums ${passRateColor(latest.passRate)}`}>
-              {latest.passRate.toFixed(1)}%
-            </span>
-            <span className="text-sm text-slate-600">de sucesso</span>
-            {!hasFailed && (
-              <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                ✓ tudo passou
-              </span>
-            )}
-            {hasFailed && (
-              <span className="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-700">
-                {latest.failed} falhou
-              </span>
-            )}
+    <div className={`overflow-hidden rounded-xl border ${bgCls}`}>
+      <div className="flex items-stretch">
+        <div className="min-w-0 flex-1 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span
+                  className={`text-2xl font-bold tabular-nums ${passRateColor(latest.passRate)}`}
+                >
+                  {latest.passRate.toFixed(1)}%
+                </span>
+                <span className="text-sm text-slate-600">de sucesso</span>
+                {!hasFailed && (
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                    ✓ tudo passou
+                  </span>
+                )}
+                {hasFailed && (
+                  <span className="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                    {latest.failed} falhou
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 text-[11px] text-slate-500">
+                {new Date(latest.emittedAt).toLocaleString('pt-BR')}
+                {' · '}
+                {formatTimeAgo(latest.emittedAt)}
+                {` · ${totalDuration} total`}
+                {' · '}
+                <span className="text-slate-600">{latest.runner}</span>
+              </p>
+              {suiteLabels.length > 0 && (
+                <p className="mt-1 text-xs text-slate-400">Suítes: {suiteLabels.join(' · ')}</p>
+              )}
+              <p className="mt-2 text-xs leading-relaxed text-slate-600">{summary}</p>
+            </div>
+
+            <dl className="flex shrink-0 gap-5 text-xs">
+              <div className="flex flex-col items-center">
+                <dt className="text-slate-400">total</dt>
+                <dd className="font-bold text-slate-700">{latest.total}</dd>
+              </div>
+              <div className="flex flex-col items-center">
+                <dt className="text-emerald-600">passou</dt>
+                <dd className="font-bold text-emerald-700">{latest.passed}</dd>
+              </div>
+              {latest.failed > 0 && (
+                <div className="flex flex-col items-center">
+                  <dt className="text-rose-500">falhou</dt>
+                  <dd className="font-bold text-rose-700">{latest.failed}</dd>
+                </div>
+              )}
+              {latest.skipped > 0 && (
+                <div className="flex flex-col items-center">
+                  <dt className="text-slate-400">pulado</dt>
+                  <dd className="font-bold text-slate-500">{latest.skipped}</dd>
+                </div>
+              )}
+            </dl>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Último run {formatTimeAgo(latest.emittedAt)} · {latest.runner}
-          </p>
-          {suiteLabels.length > 0 && (
-            <p className="mt-0.5 text-xs text-slate-400">Suítes: {suiteLabels.join(' · ')}</p>
+
+          <div className="mt-3 px-0">
+            <PassRateBar rate={latest.passRate} thin />
+          </div>
+
+          {latestResults.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="mt-3 flex w-full items-center justify-between gap-2 rounded-lg border border-slate-200/80 bg-white/60 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 transition-colors hover:bg-white/90"
+              >
+                <span>Detalhes por cenário</span>
+                <ChevronIcon open={expanded} />
+              </button>
+
+              {expanded && (
+                <div className="mt-3 border-t border-slate-200/80 pt-3">
+                  <E2ERunScenarios scenarios={latestResults} />
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        <dl className="flex gap-5 text-xs">
-          <div className="flex flex-col items-center">
-            <dt className="text-slate-400">total</dt>
-            <dd className="font-bold text-slate-700">{latest.total}</dd>
-          </div>
-          <div className="flex flex-col items-center">
-            <dt className="text-emerald-600">passou</dt>
-            <dd className="font-bold text-emerald-700">{latest.passed}</dd>
-          </div>
-          {latest.failed > 0 && (
-            <div className="flex flex-col items-center">
-              <dt className="text-rose-500">falhou</dt>
-              <dd className="font-bold text-rose-700">{latest.failed}</dd>
-            </div>
-          )}
-          {latest.skipped > 0 && (
-            <div className="flex flex-col items-center">
-              <dt className="text-slate-400">pulado</dt>
-              <dd className="font-bold text-slate-500">{latest.skipped}</dd>
-            </div>
-          )}
-        </dl>
+        {onDeleteRun && (
+          <button
+            type="button"
+            disabled={deleting}
+            aria-label="Remover esta execução do histórico"
+            title="Remover do histórico"
+            className="flex shrink-0 items-center justify-center border-l border-slate-200/60 bg-white/30 px-3.5 text-slate-400 transition-colors hover:bg-rose-50/80 hover:text-rose-600 disabled:pointer-events-none disabled:opacity-40"
+            onClick={handleDelete}
+          >
+            <TrashIcon />
+          </button>
+        )}
       </div>
     </div>
   )
@@ -620,26 +687,31 @@ export function E2EPanel({ e2e, onRunsChanged }: E2EPanelProps) {
       subtitle="Resultados dos testes end-to-end publicados automaticamente pelo pipeline do tribus-e2e."
     >
       <div className="space-y-4">
-        {/* Executive summary */}
-        <ExecutiveSummary latest={latest} latestResults={latestResults} />
+        {/* Executive summary (includes latest run details) */}
+        <ExecutiveSummary
+          latest={latest}
+          latestResults={latestResults}
+          {...(onRunsChanged ? { onDeleteRun: handleDeleteRun } : {})}
+        />
 
-        {/* Run history */}
-        <div>
-          <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Histórico de execuções
-          </p>
-          <div className="space-y-3">
-            {runs.map((run, i) => (
-              <RunCard
-                key={run.id}
-                run={run}
-                isLatest={i === 0}
-                scenarios={i === 0 ? latestResults : null}
-                {...(onRunsChanged ? { onDeleteRun: handleDeleteRun } : {})}
-              />
-            ))}
+        {/* Older runs only */}
+        {runs.length > 1 && (
+          <div>
+            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Histórico de execuções
+            </p>
+            <div className="space-y-3">
+              {runs.slice(1).map((run) => (
+                <RunCard
+                  key={run.id}
+                  run={run}
+                  scenarios={null}
+                  {...(onRunsChanged ? { onDeleteRun: handleDeleteRun } : {})}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </SectionCard>
   )
