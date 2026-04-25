@@ -7,6 +7,8 @@ export const serviceKindSchema = z.enum([
   'ops-api',
   'be-api',
   'cds-api',
+  'hub-api',
+  'hub-web',
 ])
 export const serviceStatusSchema = z.enum(['healthy', 'degraded', 'down'])
 
