@@ -1,7 +1,13 @@
 import { z } from 'zod'
 
 export const sourceSchema = z.enum(['check-runner', 'future'])
-export const serviceKindSchema = z.enum(['storefront-page', 'storefront-api', 'ops-api', 'be-api'])
+export const serviceKindSchema = z.enum([
+  'storefront-page',
+  'storefront-api',
+  'ops-api',
+  'be-api',
+  'cds-api',
+])
 export const serviceStatusSchema = z.enum(['healthy', 'degraded', 'down'])
 
 export const checkResultInputSchema = z.object({
