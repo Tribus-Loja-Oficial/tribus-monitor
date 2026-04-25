@@ -11,6 +11,9 @@ export async function runCheckCycle(
     storefrontBaseUrl: env.TRIBUS_STOREFRONT_BASE_URL,
     opsBaseUrl: env.TRIBUS_OPS_BASE_URL,
     beBaseUrl: env.TRIBUS_BE_BASE_URL,
+    cdsBaseUrl: env.TRIBUS_CDS_BASE_URL,
+    hubApiBaseUrl: env.TRIBUS_HUB_API_BASE_URL,
+    hubWebBaseUrl: env.TRIBUS_HUB_WEB_BASE_URL,
     niches: env.niches,
   })
 

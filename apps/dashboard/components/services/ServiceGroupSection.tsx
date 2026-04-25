@@ -14,6 +14,8 @@ export function ServiceGroupSection({ group, checksByService }: ServiceGroupSect
     storefront: 'border-l-4 border-l-blue-400',
     ops: 'border-l-4 border-l-violet-400',
     be: 'border-l-4 border-l-slate-400',
+    cds: 'border-l-4 border-l-emerald-400',
+    hub: 'border-l-4 border-l-amber-400',
     other: 'border-l-4 border-l-slate-300',
   }
 

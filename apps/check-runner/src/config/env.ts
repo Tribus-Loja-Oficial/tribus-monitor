@@ -7,6 +7,9 @@ const envSchema = z.object({
   TRIBUS_STOREFRONT_BASE_URL: z.string().url(),
   TRIBUS_OPS_BASE_URL: z.string().url(),
   TRIBUS_BE_BASE_URL: z.string().url(),
+  TRIBUS_CDS_BASE_URL: z.string().url(),
+  TRIBUS_HUB_API_BASE_URL: z.string().url(),
+  TRIBUS_HUB_WEB_BASE_URL: z.string().url(),
 })
 
 export function getEnv() {

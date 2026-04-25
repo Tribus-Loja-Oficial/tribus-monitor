@@ -2,7 +2,14 @@ export type SourceType = 'check-runner' | 'future'
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
 
-export type ServiceKind = 'storefront-page' | 'storefront-api' | 'ops-api' | 'be-api'
+export type ServiceKind =
+  | 'storefront-page'
+  | 'storefront-api'
+  | 'ops-api'
+  | 'be-api'
+  | 'cds-api'
+  | 'hub-api'
+  | 'hub-web'
 
 export interface ServiceDefinition {
   serviceKey: string

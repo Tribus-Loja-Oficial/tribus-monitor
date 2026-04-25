@@ -52,7 +52,14 @@ export function createApp(bindings?: MonitorEnv) {
   })
 
   const coverageIngestSchema = z.object({
-    repoKey: z.enum(['tribus-storefront', 'tribus-ops', 'tribus-monitor', 'real-state']),
+    repoKey: z.enum([
+      'tribus-storefront',
+      'tribus-ops',
+      'tribus-monitor',
+      'real-state',
+      'tribus-cds',
+      'tribus-hub',
+    ]),
     repoName: z.string().min(1),
     lines: z.number().min(0).max(100),
     functions: z.number().min(0).max(100),

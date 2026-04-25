@@ -24,11 +24,21 @@ describe('groupServicesByDomain', () => {
       },
       { ...base, serviceKey: 'ops-health-corrida', serviceName: 'b', kind: 'ops-api' },
       { ...base, serviceKey: 'be-catalog-products-corrida', serviceName: 'c', kind: 'be-api' },
+      { ...base, niche: 'platform', serviceKey: 'cds-health', serviceName: 'd', kind: 'cds-api' },
+      {
+        ...base,
+        niche: 'platform',
+        serviceKey: 'hub-api-health',
+        serviceName: 'e',
+        kind: 'hub-api',
+      },
     ])
 
     expect(groups.find((g) => g.key === 'storefront')?.services.length).toBe(1)
     expect(groups.find((g) => g.key === 'ops')?.services.length).toBe(1)
     expect(groups.find((g) => g.key === 'be')?.services.length).toBe(1)
+    expect(groups.find((g) => g.key === 'cds')?.services.length).toBe(1)
+    expect(groups.find((g) => g.key === 'hub')?.services.length).toBe(1)
   })
 
   it('places unknown keys in other and sorts by status then key', () => {

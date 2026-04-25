@@ -9,6 +9,9 @@ vi.mock('./config/env', () => ({
     TRIBUS_STOREFRONT_BASE_URL: 'https://sf.example',
     TRIBUS_OPS_BASE_URL: 'https://ops.example',
     TRIBUS_BE_BASE_URL: 'https://be.example',
+    TRIBUS_CDS_BASE_URL: 'https://cds.example',
+    TRIBUS_HUB_API_BASE_URL: 'https://hub-api.example',
+    TRIBUS_HUB_WEB_BASE_URL: 'https://hub.example',
   }),
 }))
 

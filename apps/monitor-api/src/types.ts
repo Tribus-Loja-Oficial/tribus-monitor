@@ -6,7 +6,13 @@ import type {
   ServiceState,
 } from '@tribus-monitor/core'
 
-export type CoverageRepoKey = 'tribus-storefront' | 'tribus-ops' | 'tribus-monitor' | 'real-state'
+export type CoverageRepoKey =
+  | 'tribus-storefront'
+  | 'tribus-ops'
+  | 'tribus-monitor'
+  | 'real-state'
+  | 'tribus-cds'
+  | 'tribus-hub'
 
 export interface CoverageSnapshot {
   repoKey: CoverageRepoKey

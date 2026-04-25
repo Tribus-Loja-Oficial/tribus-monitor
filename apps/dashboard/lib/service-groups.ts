@@ -2,7 +2,7 @@ import type { ServiceState } from '@tribus-monitor/core'
 import { getServiceStatusPriority } from './status'
 
 export interface ServiceGroup {
-  key: 'storefront' | 'ops' | 'be' | 'other'
+  key: 'storefront' | 'ops' | 'be' | 'cds' | 'hub' | 'other'
   title: string
   description: string
   icon: string
@@ -13,6 +13,8 @@ function getDomainGroup(service: ServiceState): ServiceGroup['key'] {
   if (service.serviceKey.startsWith('ops-')) return 'ops'
   if (service.serviceKey.startsWith('be-')) return 'be'
   if (service.serviceKey.startsWith('storefront-')) return 'storefront'
+  if (service.serviceKey.startsWith('cds-')) return 'cds'
+  if (service.serviceKey.startsWith('hub-')) return 'hub'
   return 'other'
 }
 
@@ -21,6 +23,8 @@ export function groupServicesByDomain(services: ServiceState[]): ServiceGroup[] 
     storefront: [],
     ops: [],
     be: [],
+    cds: [],
+    hub: [],
     other: [],
   }
 
@@ -50,6 +54,20 @@ export function groupServicesByDomain(services: ServiceState[]): ServiceGroup[] 
         'Checks diretos do backend https://be.tribusloja.com.br e integridade do catalogo.',
       icon: '🗄️',
       services: grouped.be,
+    },
+    {
+      key: 'cds',
+      title: 'Tribus CDS',
+      description: 'Checks da API de autenticação e identidade de consumidores.',
+      icon: '🔐',
+      services: grouped.cds,
+    },
+    {
+      key: 'hub',
+      title: 'Tribus Hub',
+      description: 'Checks da plataforma interna de knowledge, projetos e tarefas.',
+      icon: '🧠',
+      services: grouped.hub,
     },
     {
       key: 'other',

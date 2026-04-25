@@ -4,9 +4,34 @@ export function buildTargets(input: {
   storefrontBaseUrl: string
   opsBaseUrl: string
   beBaseUrl: string
+  cdsBaseUrl: string
+  hubApiBaseUrl: string
+  hubWebBaseUrl: string
   niches: string[]
 }): CheckTarget[] {
-  const targets: CheckTarget[] = []
+  const targets: CheckTarget[] = [
+    {
+      serviceKey: 'cds-health',
+      serviceName: 'CDS API health',
+      kind: 'cds-api',
+      niche: 'platform',
+      url: `${input.cdsBaseUrl}/health`,
+    },
+    {
+      serviceKey: 'hub-api-health',
+      serviceName: 'Hub API health',
+      kind: 'hub-api',
+      niche: 'platform',
+      url: `${input.hubApiBaseUrl}/health`,
+    },
+    {
+      serviceKey: 'hub-web-health',
+      serviceName: 'Hub web health',
+      kind: 'hub-web',
+      niche: 'platform',
+      url: `${input.hubWebBaseUrl}/api/health`,
+    },
+  ]
   for (const niche of input.niches) {
     targets.push(
       {
