@@ -59,6 +59,7 @@ export function createApp(bindings?: MonitorEnv) {
       'real-state',
       'tribus-cds',
       'tribus-hub',
+      'tribus-erp',
     ]),
     repoName: z.string().min(1),
     lines: z.number().min(0).max(100),

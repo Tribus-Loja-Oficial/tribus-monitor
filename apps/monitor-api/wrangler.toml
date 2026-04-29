@@ -3,9 +3,9 @@ main = "src/index.ts"
 compatibility_date = "2026-01-01"
 
 [vars]
-MONITOR_CHECKS_TOKEN = ""
-MONITOR_COVERAGE_TOKEN = ""
-MONITOR_E2E_TOKEN = ""
+MONITOR_CHECKS_TOKEN = "tribus-monitor-token-2026-7kP4mQ9xL2vN8dR5"
+MONITOR_COVERAGE_TOKEN = "oHlcifn-cM-afrHpog8AYQFstscCrKcJznXCZx8d5FI"
+MONITOR_E2E_TOKEN = "tribus-monitor-token-2026-7kP4mQ9xL2vN8dR5"
 
 [[d1_databases]]
 binding = "DB"

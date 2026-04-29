@@ -6,6 +6,7 @@ export interface CoverageRepoSnapshot {
     | 'real-state'
     | 'tribus-cds'
     | 'tribus-hub'
+    | 'tribus-erp'
   name: string
   lines: number | null
   functions: number | null
@@ -102,7 +103,8 @@ function parseRepo(raw: unknown): CoverageRepoSnapshot | null {
     key !== 'tribus-monitor' &&
     key !== 'real-state' &&
     key !== 'tribus-cds' &&
-    key !== 'tribus-hub'
+    key !== 'tribus-hub' &&
+    key !== 'tribus-erp'
   ) {
     return null
   }

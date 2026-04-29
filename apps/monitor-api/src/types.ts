@@ -13,6 +13,7 @@ export type CoverageRepoKey =
   | 'real-state'
   | 'tribus-cds'
   | 'tribus-hub'
+  | 'tribus-erp'
 
 export interface CoverageSnapshot {
   repoKey: CoverageRepoKey
