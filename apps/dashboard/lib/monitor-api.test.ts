@@ -28,7 +28,7 @@ describe('fetchDashboardData', () => {
     expect(data.incidents).toHaveLength(0)
     expect(data.historyCount).toBe(0)
     expect(data.checks).toHaveLength(0)
-    expect(data.coverage.repos).toHaveLength(6)
+    expect(data.coverage.repos).toHaveLength(7)
     expect(data.e2e.runs).toHaveLength(0)
   })
 

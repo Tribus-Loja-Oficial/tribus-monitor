@@ -81,6 +81,16 @@ export const DEFAULT_REPOS: CoverageRepoSnapshot[] = [
     updatedAt: null,
     sourceUrl: null,
   },
+  {
+    key: 'tribus-erp',
+    name: 'Tribus ERP',
+    lines: null,
+    functions: null,
+    branches: null,
+    statements: null,
+    updatedAt: null,
+    sourceUrl: null,
+  },
 ]
 
 function asPercentOrNull(input: unknown): number | null {
